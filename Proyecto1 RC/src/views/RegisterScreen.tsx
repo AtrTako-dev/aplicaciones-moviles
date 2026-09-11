@@ -71,7 +71,7 @@ export default function RegisterScreen({ navigation }: Props) {
       >
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.brandContainer}>
-            <Text style={styles.brand}>VOZ URBANA</Text>
+            <Text style={styles.brand}>APP1INICIO_CIERRE</Text>
             <Text style={styles.subtitle}>Crear cuenta</Text>
           </View>
 

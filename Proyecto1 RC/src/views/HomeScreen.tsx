@@ -38,7 +38,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.logo}>VOZ URBANA</Text>
+          <Text style={styles.logo}>APP1INICIO_CIERRE</Text>
           <Text style={styles.welcome} testID="home-welcome">
             Bienvenido, {usuario?.nombre ?? ''}
           </Text>

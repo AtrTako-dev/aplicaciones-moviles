@@ -7,7 +7,7 @@ Repositorio de proyectos para la materia Desarrollo de Aplicaciones Moviles.
 | Carpeta | Tecnologia | Descripcion |
 | --- | --- | --- |
 | `Proyecto1 AS` | Kotlin, Jetpack Compose y Android | Login, roles y cierre de sesion con Fake Store API. |
-| `Proyecto1 RC` | TypeScript, React Native y Expo | Aplicacion Voz Urbana. |
+| `Proyecto1 RC` | TypeScript, React Native y Expo | Aplicacion APP1INICIO_CIERRE. |
 
 ## Proyecto1 AS: Android
 
