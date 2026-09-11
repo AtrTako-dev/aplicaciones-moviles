@@ -9,3 +9,10 @@ local.properties
 .externalNativeBuild/
 .cxx/
 captures/
+
+# JavaScript and Expo generated files
+node_modules/
+.expo/
+dist/
+web-build/
+.env*.local
