@@ -1,0 +1,11 @@
+# Android Studio local and generated files
+.gradle/
+.idea/
+.kotlin/
+**/build/
+local.properties
+*.iml
+.DS_Store
+.externalNativeBuild/
+.cxx/
+captures/
