@@ -11,9 +11,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.app1_iniciocierre.controller.LoginController
 import com.example.app1_iniciocierre.model.NetworkMonitor
+import com.example.app1_iniciocierre.model.ProductoService
 import com.example.app1_iniciocierre.model.SessionStore
 import com.example.app1_iniciocierre.model.UsuarioService
-import com.example.app1_iniciocierre.view.InicioView
+import com.example.app1_iniciocierre.view.CatalogoView
+import com.example.app1_iniciocierre.view.DetalleProductoView
 import com.example.app1_iniciocierre.view.LoginView
 
 
@@ -45,6 +47,7 @@ fun App(activity: ComponentActivity) {
     var sesionActual by remember {
         mutableStateOf(sessionStore.obtener())
     }
+    var productoSeleccionado by remember { mutableStateOf<Int?>(null) }
 
 
     val controller = remember {
@@ -54,6 +57,7 @@ fun App(activity: ComponentActivity) {
             NetworkMonitor(activity.applicationContext)
         )
     }
+    val productoService = remember { ProductoService() }
 
 
     if (sesionActual == null) {
@@ -69,18 +73,23 @@ fun App(activity: ComponentActivity) {
             }
         )
 
-    } else {
-
-        InicioView(
-
-            usuario = sesionActual!!.usuario,
-
+    } else if (productoSeleccionado == null) {
+        CatalogoView(
+            usuario = sesionActual!!.usuario.username,
+            servicio = productoService,
+            abrirDetalle = { productoSeleccionado = it },
             cerrarSesion = {
-
-                // The protected composable leaves composition before Login is shown.
                 sessionStore.limpiar()
+                productoSeleccionado = null
                 sesionActual = null
             }
+        )
+    } else {
+        DetalleProductoView(
+            productoId = productoSeleccionado!!,
+            rol = sesionActual!!.usuario.rol,
+            servicio = productoService,
+            volverCatalogo = { productoSeleccionado = null }
         )
     }
 }
