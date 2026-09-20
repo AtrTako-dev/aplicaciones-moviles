@@ -1,3 +1,4 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,9 +6,12 @@ import ErrorMessage from '../components/ErrorMessage';
 import PrimaryButton from '../components/PrimaryButton';
 import { ROLES } from '../model/Rol';
 import { useAuth } from '../navigation/AuthContext';
+import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
 
-export default function HomeScreen() {
+type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
+
+export default function HomeScreen({ navigation }: Props) {
   const { usuario, signOut } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,12 +56,20 @@ export default function HomeScreen() {
 
           <ErrorMessage message={formError} />
 
-          <PrimaryButton
-            testID="logout-button"
-            title="Cerrar sesión"
-            onPress={handleLogout}
-            loading={loading}
-          />
+          <View style={styles.actions}>
+            <PrimaryButton
+              testID="home-catalog-button"
+              title="Ver catálogo"
+              onPress={() => navigation.navigate('Catalog')}
+            />
+
+            <PrimaryButton
+              testID="logout-button"
+              title="Cerrar sesión"
+              onPress={handleLogout}
+              loading={loading}
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -123,5 +135,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: Spacing.md,
     marginBottom: Spacing.lg,
+  },
+  actions: {
+    width: '100%',
+    gap: Spacing.md,
   },
 });

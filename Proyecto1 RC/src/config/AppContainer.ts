@@ -1,4 +1,5 @@
 import { AuthController } from '../controllers/AuthController';
+import { CatalogController } from '../controllers/CatalogController';
 import { RegisterController } from '../controllers/RegisterController';
 import { Database } from '../database/Database';
 import { SqliteUserDao } from '../database/SqliteUserDao';
@@ -6,6 +7,7 @@ import { UserRepository } from '../repository/UserRepository';
 import { ApiClient } from '../services/ApiClient';
 import { AuthService } from '../services/AuthService';
 import { NetworkService } from '../services/NetworkService';
+import { ProductService } from '../services/ProductService';
 import { StorageService } from '../services/StorageService';
 import { UserService } from '../services/UserService';
 import { CryptoPasswordHasher } from '../utils/security';
@@ -24,3 +26,8 @@ export const authController = new AuthController({
   storageService: new StorageService(),
   networkService: new NetworkService(),
 });
+
+export const catalogController = new CatalogController(
+  new ProductService(apiClient),
+  new NetworkService(),
+);
