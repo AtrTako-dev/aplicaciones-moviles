@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ErrorMessage from '../components/ErrorMessage';
 import PrimaryButton from '../components/PrimaryButton';
 import { ROLES } from '../model/Rol';
 import { useAuth } from '../navigation/AuthContext';
+import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
 
 export default function HomeScreen() {
   const { usuario, signOut } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -53,10 +57,17 @@ export default function HomeScreen() {
           <ErrorMessage message={formError} />
 
           <PrimaryButton
+            testID="catalog-button"
+            title="Ver catálogo"
+            onPress={() => navigation.navigate('Catalogo')}
+          />
+
+          <PrimaryButton
             testID="logout-button"
             title="Cerrar sesión"
             onPress={handleLogout}
             loading={loading}
+            variant="ghost"
           />
         </View>
       </ScrollView>

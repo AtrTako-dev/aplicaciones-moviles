@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { useAuth } from './AuthContext';
 import LoginScreen from '../views/LoginScreen';
 import HomeScreen from '../views/HomeScreen';
+import ProductCatalogScreen from '../views/ProductCatalogScreen';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { Colors } from '../utils/theme';
 
@@ -15,6 +16,7 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Home: undefined;
+  Catalogo: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -36,6 +38,15 @@ export default function AppNavigator() {
       {usuario ? (
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
           <AppStack.Screen name="Home" component={HomeScreen} options={{ gestureEnabled: false }} />
+          <AppStack.Screen
+            name="Catalogo"
+            component={ProductCatalogScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Catálogo',
+              headerBackTitle: 'Volver',
+            }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
