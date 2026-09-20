@@ -7,6 +7,7 @@ import {
   validateLoginInput,
   validateName,
   validatePassword,
+  validateProductForm,
   validateRegistrationInput,
 } from '../validators';
 
@@ -143,6 +144,85 @@ describe('validateRegistrationInput', () => {
       email: 'ana@ejemplo.com',
       password: 'clave123',
       confirmPassword: 'clave123',
+    });
+    expect(errors).toEqual({});
+  });
+});
+
+describe('validateProductTitle', () => {
+  it('rechaza un título vacío', () => {
+    expect(validateProductForm({ title: '', price: '10', description: 'd', category: 'c' }).title).toBe(
+      'Ingresa el título del producto.',
+    );
+  });
+
+  it('rechaza un título solo con espacios', () => {
+    expect(validateProductForm({ title: '  ', price: '10', description: 'd', category: 'c' }).title).toBe(
+      'Ingresa el título del producto.',
+    );
+  });
+
+  it('acepta un título válido', () => {
+    expect(validateProductForm({ title: 'Vestido', price: '10', description: 'd', category: 'c' })).toEqual({});
+  });
+});
+
+describe('validateProductPrice', () => {
+  it('rechaza un precio vacío', () => {
+    expect(validateProductForm({ title: 't', price: '', description: 'd', category: 'c' }).price).toBe(
+      'Ingresa el precio.',
+    );
+  });
+
+  it('rechaza un precio no numérico', () => {
+    expect(validateProductForm({ title: 't', price: 'abc', description: 'd', category: 'c' }).price).toBe(
+      'Ingresa un precio válido.',
+    );
+  });
+
+  it('rechaza un precio negativo', () => {
+    expect(validateProductForm({ title: 't', price: '-5', description: 'd', category: 'c' }).price).toBe(
+      'Ingresa un precio válido.',
+    );
+  });
+
+  it('acepta un precio positivo con decimales', () => {
+    expect(validateProductForm({ title: 't', price: '45.99', description: 'd', category: 'c' })).toEqual({});
+  });
+
+  it('acepta un precio igual a cero', () => {
+    expect(validateProductForm({ title: 't', price: '0', description: 'd', category: 'c' })).toEqual({});
+  });
+});
+
+describe('validateProductDescription', () => {
+  it('rechaza una descripción vacía', () => {
+    expect(
+      validateProductForm({ title: 't', price: '10', description: '', category: 'c' }).description,
+    ).toBe('Ingresa la descripción del producto.');
+  });
+});
+
+describe('validateProductCategory', () => {
+  it('rechaza una categoría vacía', () => {
+    expect(
+      validateProductForm({ title: 't', price: '10', description: 'd', category: '  ' }).category,
+    ).toBe('Ingresa la categoría del producto.');
+  });
+});
+
+describe('validateProductForm', () => {
+  it('devuelve errores en todos los campos vacíos', () => {
+    const errors = validateProductForm({ title: '', price: '', description: '', category: '' });
+    expect(Object.keys(errors).sort()).toEqual(['category', 'description', 'price', 'title']);
+  });
+
+  it('no devuelve errores con datos válidos', () => {
+    const errors = validateProductForm({
+      title: 'Vestido de verano',
+      price: '55.99',
+      description: 'Ligero y fresco.',
+      category: 'women clothing',
     });
     expect(errors).toEqual({});
   });

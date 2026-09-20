@@ -121,3 +121,64 @@ export function validateRegistrationInput(input: RegistrationInput): FieldErrors
   }
   return errors;
 }
+
+export interface ProductFormInput {
+  title: string;
+  price: string;
+  description: string;
+  category: string;
+}
+
+export function validateProductTitle(title: string): string | null {
+  if (title.trim().length === 0) {
+    return 'Ingresa el título del producto.';
+  }
+  return null;
+}
+
+export function validateProductPrice(price: string): string | null {
+  const value = price.trim();
+  if (value.length === 0) {
+    return 'Ingresa el precio.';
+  }
+  const numero = Number(value);
+  if (!Number.isFinite(numero) || numero < 0) {
+    return 'Ingresa un precio válido.';
+  }
+  return null;
+}
+
+export function validateProductDescription(description: string): string | null {
+  if (description.trim().length === 0) {
+    return 'Ingresa la descripción del producto.';
+  }
+  return null;
+}
+
+export function validateProductCategory(category: string): string | null {
+  if (category.trim().length === 0) {
+    return 'Ingresa la categoría del producto.';
+  }
+  return null;
+}
+
+export function validateProductForm(input: ProductFormInput): FieldErrors {
+  const errors: FieldErrors = {};
+  const titleError = validateProductTitle(input.title);
+  if (titleError) {
+    errors.title = titleError;
+  }
+  const priceError = validateProductPrice(input.price);
+  if (priceError) {
+    errors.price = priceError;
+  }
+  const descriptionError = validateProductDescription(input.description);
+  if (descriptionError) {
+    errors.description = descriptionError;
+  }
+  const categoryError = validateProductCategory(input.category);
+  if (categoryError) {
+    errors.category = categoryError;
+  }
+  return errors;
+}

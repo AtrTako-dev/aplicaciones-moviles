@@ -4,20 +4,25 @@
  */
 
 import { useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Colors, Spacing } from '../utils/theme';
 import { Product } from '../model/Product';
 
 interface ProductCardProps {
   product: Product;
+  onPress?: () => void;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, onPress }: ProductCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Ver detalle de ${product.title}`}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
       <View style={styles.imageContainer}>
         {imageFailed ? (
           <View style={styles.imageFallback}>
@@ -42,7 +47,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Text>
         <Text style={styles.price}>{product.formattedPrice}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -52,6 +57,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
     borderRadius: Spacing.md,
     overflow: 'hidden',
+  },
+  cardPressed: {
+    opacity: 0.85,
   },
   imageContainer: {
     width: '100%',

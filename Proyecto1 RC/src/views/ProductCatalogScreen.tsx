@@ -9,13 +9,24 @@
 
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import ProductCard from '../components/ProductCard';
 import { useProductController } from '../controllers/ProductController';
+import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
+import { useRefreshOnFocus } from '../hooks/useRefreshOnFocus';
 
 export default function ProductCatalogScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { isLoading, hasError, products, retry } = useProductController();
+
+  useRefreshOnFocus(retry);
+
+  const openDetail = (productId: number) => {
+    navigation.navigate('DetalleProducto', { productId });
+  };
 
   if (isLoading) {
     return <LoadingState />;
@@ -30,7 +41,7 @@ export default function ProductCatalogScreen() {
       <FlatList
         data={products}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        renderItem={({ item }) => <ProductCard product={item} onPress={() => openDetail(item.id)} />}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}

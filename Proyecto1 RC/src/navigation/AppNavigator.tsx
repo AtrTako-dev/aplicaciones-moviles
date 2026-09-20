@@ -6,6 +6,8 @@ import { useAuth } from './AuthContext';
 import LoginScreen from '../views/LoginScreen';
 import HomeScreen from '../views/HomeScreen';
 import ProductCatalogScreen from '../views/ProductCatalogScreen';
+import ProductDetailScreen from '../views/ProductDetailScreen';
+import ProductEditScreen from '../views/ProductEditScreen';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { Colors } from '../utils/theme';
 
@@ -17,6 +19,8 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   Home: undefined;
   Catalogo: undefined;
+  DetalleProducto: { productId: number };
+  EditarProducto: { productId: number };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -44,6 +48,24 @@ export default function AppNavigator() {
             options={{
               headerShown: true,
               headerTitle: 'Catálogo',
+              headerBackTitle: 'Volver',
+            }}
+          />
+          <AppStack.Screen
+            name="DetalleProducto"
+            component={ProductDetailScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Detalle del producto',
+              headerBackTitle: 'Volver',
+            }}
+          />
+          <AppStack.Screen
+            name="EditarProducto"
+            component={ProductEditScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Editar producto',
               headerBackTitle: 'Volver',
             }}
           />
