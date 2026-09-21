@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Usuario } from '../model/Usuario';
 import { authController } from '../config/AppContainer';
+import { sessionService } from '../services/SessionService';
 
 interface AuthState {
   usuario: Usuario | null;
   initializing: boolean;
-  signIn: (usuario: Usuario) => void;
+  signIn: (usuario: Usuario) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -19,7 +20,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
     authController
       .restaurarSesion()
-      .then((usuarioRestaurado) => {
+      .then(async (usuarioRestaurado) => {
+        if (usuarioRestaurado) {
+          await sessionService.saveSession(usuarioRestaurado.username, usuarioRestaurado.rol);
+        }
         if (active) {
           setUsuario(usuarioRestaurado);
         }
@@ -39,11 +43,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = (nuevoUsuario: Usuario) => {
+  const signIn = async (nuevoUsuario: Usuario) => {
+    try {
+      await sessionService.saveSession(nuevoUsuario.username, nuevoUsuario.rol);
+    } catch {
+      // La sesión principal ya quedó guardada por el AuthController;
+      // la sesión local es solo un refuerzo para la interfaz por rol.
+    }
     setUsuario(nuevoUsuario);
   };
 
   const signOut = async () => {
+    await sessionService.clearSession();
     await authController.logout();
     setUsuario(null);
   };

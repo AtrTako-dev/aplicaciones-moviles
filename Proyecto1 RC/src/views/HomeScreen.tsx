@@ -62,12 +62,17 @@ export default function HomeScreen({ navigation }: Props) {
               title="Ver catálogo"
               onPress={() => navigation.navigate('Catalog')}
             />
-
+            <PrimaryButton
+              testID="catalog-button"
+              title="Ver catálogo actualizado"
+              onPress={() => navigation.navigate('Catalogo')}
+            />
             <PrimaryButton
               testID="logout-button"
               title="Cerrar sesión"
               onPress={handleLogout}
               loading={loading}
+              variant="ghost"
             />
           </View>
         </View>

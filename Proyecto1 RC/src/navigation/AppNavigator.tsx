@@ -6,7 +6,10 @@ import { useAuth } from './AuthContext';
 import LoginScreen from '../views/LoginScreen';
 import HomeScreen from '../views/HomeScreen';
 import CatalogScreen from '../views/CatalogScreen';
+import LegacyProductDetailScreen from '../views/LegacyProductDetailScreen';
 import ProductDetailScreen from '../views/ProductDetailScreen';
+import ProductCatalogScreen from '../views/ProductCatalogScreen';
+import ProductEditScreen from '../views/ProductEditScreen';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { Colors } from '../utils/theme';
 import type { Producto } from '../model/Producto';
@@ -20,6 +23,9 @@ export type AppStackParamList = {
   Home: undefined;
   Catalog: undefined;
   ProductDetail: { producto: Producto };
+  Catalogo: undefined;
+  DetalleProducto: { productId: number };
+  EditarProducto: { productId: number };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -44,13 +50,40 @@ export default function AppNavigator() {
           <AppStack.Screen name="Catalog" component={CatalogScreen} />
           <AppStack.Screen
             name="ProductDetail"
-            component={ProductDetailScreen}
+            component={LegacyProductDetailScreen}
             options={{
               headerShown: true,
               title: 'Detalle del producto',
               headerBackTitle: 'Volver',
               headerTintColor: Colors.primary,
               headerStyle: { backgroundColor: Colors.background },
+            }}
+          />
+          <AppStack.Screen
+            name="Catalogo"
+            component={ProductCatalogScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Catálogo',
+              headerBackTitle: 'Volver',
+            }}
+          />
+          <AppStack.Screen
+            name="DetalleProducto"
+            component={ProductDetailScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Detalle del producto',
+              headerBackTitle: 'Volver',
+            }}
+          />
+          <AppStack.Screen
+            name="EditarProducto"
+            component={ProductEditScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Editar producto',
+              headerBackTitle: 'Volver',
             }}
           />
         </AppStack.Navigator>

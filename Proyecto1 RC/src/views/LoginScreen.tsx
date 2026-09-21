@@ -31,7 +31,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const usuario = await authController.login(username, password);
-      signIn(usuario);
+      await signIn(usuario);
     } catch (error) {
       setFormError(
         error instanceof ErrorAmigable
