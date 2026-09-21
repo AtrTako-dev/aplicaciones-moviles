@@ -6,6 +6,26 @@ import { Product } from '../model/Product';
 
 export const FAKE_STORE_PRODUCTS_URL = 'https://fakestoreapi.com/products';
 
+export async function getProductCategories(signal?: AbortSignal): Promise<string[]> {
+  let response: Response;
+  try {
+    response = await fetch(`${FAKE_STORE_PRODUCTS_URL}/categories`, { signal });
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    throw new ProductServiceError('No se pudieron cargar las categorías.');
+  }
+
+  if (!response.ok) {
+    throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
+  }
+
+  const json: unknown = await response.json();
+  if (!Array.isArray(json) || json.some((category) => typeof category !== 'string')) {
+    throw new ProductServiceError('Las categorías recibidas no son válidas.');
+  }
+  return json;
+}
+
 export class ProductServiceError extends Error {
   constructor(message: string) {
     super(message);
@@ -64,6 +84,38 @@ export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
 /** Alias compatible: la versión original del catálogo usa fetchProducts. */
 export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
   return getProducts(signal);
+}
+
+export async function getProductsByCategory(
+  category: string,
+  signal?: AbortSignal,
+): Promise<Product[]> {
+  if (!category.trim()) return getProducts(signal);
+
+  let response: Response;
+  try {
+    response = await fetch(
+      `${FAKE_STORE_PRODUCTS_URL}/category/${encodeURIComponent(category)}`,
+      { signal },
+    );
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    throw new ProductServiceError('No se pudo cargar la categoría seleccionada.');
+  }
+
+  if (!response.ok) {
+    throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
+  }
+
+  const json: unknown = await response.json();
+  if (!Array.isArray(json)) {
+    throw new ProductServiceError('La respuesta no contiene la lista de productos.');
+  }
+  try {
+    return json.map((item) => Product.fromJson(item));
+  } catch {
+    throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
+  }
 }
 
 function isValidPositiveId(id: number): boolean {

@@ -5,8 +5,6 @@ import { StyleSheet, View } from 'react-native';
 import { useAuth } from './AuthContext';
 import LoginScreen from '../views/LoginScreen';
 import HomeScreen from '../views/HomeScreen';
-import CatalogScreen from '../views/CatalogScreen';
-import LegacyProductDetailScreen from '../views/LegacyProductDetailScreen';
 import ProductDetailScreen from '../views/ProductDetailScreen';
 import ProductCatalogScreen from '../views/ProductCatalogScreen';
 import ProductEditScreen from '../views/ProductEditScreen';
@@ -21,6 +19,7 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Home: undefined;
+  /** Rutas antiguas conservadas para compatibilidad del código aún no retirado. */
   Catalog: undefined;
   ProductDetail: { producto: Producto };
   Catalogo: undefined;
@@ -47,18 +46,6 @@ export default function AppNavigator() {
       {usuario ? (
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
           <AppStack.Screen name="Home" component={HomeScreen} options={{ gestureEnabled: false }} />
-          <AppStack.Screen name="Catalog" component={CatalogScreen} />
-          <AppStack.Screen
-            name="ProductDetail"
-            component={LegacyProductDetailScreen}
-            options={{
-              headerShown: true,
-              title: 'Detalle del producto',
-              headerBackTitle: 'Volver',
-              headerTintColor: Colors.primary,
-              headerStyle: { backgroundColor: Colors.background },
-            }}
-          />
           <AppStack.Screen
             name="Catalogo"
             component={ProductCatalogScreen}

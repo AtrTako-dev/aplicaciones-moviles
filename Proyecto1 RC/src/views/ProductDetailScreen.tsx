@@ -45,9 +45,8 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (hasError) {
-      Alert.alert('Producto no disponible', 'No se pudo cargar el producto solicitado.', [
-        { text: 'OK', onPress: () => navigation.navigate('Catalogo') },
-      ]);
+      Alert.alert('Producto no disponible', 'No se pudo cargar el producto solicitado.');
+      navigation.replace('Catalogo');
     }
   }, [hasError, navigation]);
 

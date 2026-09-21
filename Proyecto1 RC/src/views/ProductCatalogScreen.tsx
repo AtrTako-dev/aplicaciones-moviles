@@ -7,7 +7,15 @@
  *  - ERROR:   mensaje amigable y botón "Reintentar".
  */
 
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,13 +24,20 @@ import ProductCard from '../components/ProductCard';
 import { useProductController } from '../controllers/ProductController';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
-import { useRefreshOnFocus } from '../hooks/useRefreshOnFocus';
 
 export default function ProductCatalogScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
-  const { isLoading, hasError, products, retry } = useProductController();
-
-  useRefreshOnFocus(retry);
+  const {
+    isLoading,
+    hasError,
+    products,
+    retry,
+    categories,
+    categoriesLoading,
+    categoriesError,
+    selectedCategory,
+    selectCategory,
+  } = useProductController();
 
   const openDetail = (productId: number) => {
     navigation.navigate('DetalleProducto', { productId });
@@ -43,17 +58,74 @@ export default function ProductCatalogScreen() {
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <ProductCard product={item} onPress={() => openDetail(item.id)} />}
         numColumns={2}
+        removeClippedSubviews={false}
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        updateCellsBatchingPeriod={16}
+        windowSize={15}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.title}>Catálogo de productos</Text>
-            <Text style={styles.subtitle}>{products.length} productos disponibles</Text>
+            <Text style={styles.eyebrow}>STOREFLOW</Text>
+            <Text style={styles.title}>Explora productos</Text>
+            <Text style={styles.subtitle}>
+              {selectedCategory ? `Categoría: ${selectedCategory}` : 'Todos los productos'}
+            </Text>
+            <Text style={styles.filterLabel}>Filtrar por categoría</Text>
+            {categoriesLoading ? (
+              <ActivityIndicator color={Colors.primary} style={styles.categoriesLoading} />
+            ) : categoriesError ? (
+              <Text style={styles.categoriesError}>No se pudieron cargar las categorías.</Text>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chips}>
+                <CategoryChip
+                  label="Ver todos"
+                  selected={selectedCategory === null}
+                  onPress={() => selectCategory(null)}
+                />
+                {categories.map((category) => (
+                  <CategoryChip
+                    key={category}
+                    label={category}
+                    selected={selectedCategory === category}
+                    onPress={() => selectCategory(category)}
+                  />
+                ))}
+              </ScrollView>
+            )}
+            <Text style={styles.count}>{products.length} productos disponibles</Text>
           </View>
         }
       />
     </SafeAreaView>
+  );
+}
+
+interface CategoryChipProps {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}
+
+function CategoryChip({ label, selected, onPress }: CategoryChipProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={`Filtrar por ${label}`}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.chip,
+        selected && styles.chipSelected,
+        pressed && styles.chipPressed,
+      ]}>
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -101,8 +173,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
+    paddingBottom: Spacing.md,
     gap: Spacing.xs,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1.8,
+    color: Colors.primary,
   },
   title: {
     fontSize: 22,
@@ -112,6 +190,53 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: Colors.textMuted,
+  },
+  filterLabel: {
+    marginTop: Spacing.sm,
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  chips: {
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
+  },
+  chip: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.card,
+    borderRadius: 999,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  chipSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  chipPressed: {
+    opacity: 0.8,
+  },
+  chipText: {
+    color: Colors.text,
+    fontWeight: '700',
+    fontSize: 13,
+    textTransform: 'capitalize',
+  },
+  chipTextSelected: {
+    color: Colors.white,
+  },
+  categoriesLoading: {
+    alignSelf: 'flex-start',
+    marginVertical: Spacing.sm,
+  },
+  categoriesError: {
+    color: Colors.error,
+    fontSize: 13,
+  },
+  count: {
+    fontSize: 13,
+    color: Colors.textMuted,
+    marginTop: Spacing.xs,
   },
   centeredState: {
     flex: 1,

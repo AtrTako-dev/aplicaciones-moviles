@@ -5,10 +5,14 @@
  * la petición inicial y el reintento, y entrega los datos a la vista.
  */
 
-import { useCallback, useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { Product } from '../model/Product';
-import { fetchProducts } from '../services/ProductDetailService';
+import {
+  getProductCategories,
+  getProducts,
+  getProductsByCategory,
+} from '../services/ProductDetailService';
 
 export type ProductCatalogStatus = 'loading' | 'success' | 'error';
 
@@ -27,6 +31,11 @@ export interface ProductControllerResult {
   products: Product[];
   isLoading: boolean;
   hasError: boolean;
+  categories: string[];
+  categoriesLoading: boolean;
+  categoriesError: boolean;
+  selectedCategory: string | null;
+  selectCategory: (category: string | null) => void;
   /** Dispara la petición (o cancela la petición en curso si existe). */
   retry: () => void;
 }
@@ -42,7 +51,7 @@ function reducer(
 ): ProductCatalogState {
   switch (action.type) {
     case 'LOADING':
-      return { ...state, status: 'loading' };
+      return { status: 'loading', products: [] };
     case 'SUCCESS':
       return { status: 'success', products: action.products };
     case 'ERROR':
@@ -58,25 +67,33 @@ function reducer(
  */
 export function useProductController(): ProductControllerResult {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const requestId = useRef(0);
 
   /**
    * Inicia la petición. Devuelve una función de limpieza que aborta la
    * petición en curso, evitando actualizaciones de estado tras el desmontaje.
    */
-  const loadProducts = useCallback(() => {
+  const loadProducts = useCallback((category: string | null) => {
+    const currentRequest = requestId.current + 1;
+    requestId.current = currentRequest;
     const controller = new AbortController();
     const { signal } = controller;
 
     dispatch({ type: 'LOADING' });
 
-    fetchProducts(signal)
+    const request = category ? getProductsByCategory(category, signal) : getProducts(signal);
+    request
       .then((products) => {
-        if (!signal.aborted) {
+        if (!signal.aborted && requestId.current === currentRequest) {
           dispatch({ type: 'SUCCESS', products });
         }
       })
       .catch(() => {
-        if (!signal.aborted) {
+        if (!signal.aborted && requestId.current === currentRequest) {
           dispatch({ type: 'ERROR' });
         }
       });
@@ -84,13 +101,41 @@ export function useProductController(): ProductControllerResult {
     return () => controller.abort();
   }, []);
 
-  useEffect(() => loadProducts(), [loadProducts]);
+  useEffect(() => loadProducts(null), [loadProducts]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getProductCategories(controller.signal)
+      .then((items) => setCategories(items))
+      .catch(() => {
+        if (!controller.signal.aborted) setCategoriesError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCategoriesLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+
+  const selectCategory = useCallback(
+    (category: string | null) => {
+      setSelectedCategory(category);
+      loadProducts(category);
+    },
+    [loadProducts],
+  );
+
+  const retry = useCallback(() => loadProducts(selectedCategory), [loadProducts, selectedCategory]);
 
   return {
     status: state.status,
     products: state.products,
     isLoading: state.status === 'loading',
     hasError: state.status === 'error',
-    retry: loadProducts,
+    categories,
+    categoriesLoading,
+    categoriesError,
+    selectedCategory,
+    selectCategory,
+    retry,
   };
 }

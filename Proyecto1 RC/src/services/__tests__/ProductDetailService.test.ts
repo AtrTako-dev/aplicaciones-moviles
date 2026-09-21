@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
   deleteProduct,
+  getProductCategories,
   getProductById,
   getProducts,
+  getProductsByCategory,
   updateProduct,
 } from '../ProductDetailService';
 
@@ -46,6 +48,44 @@ describe('productService - detalle (US05)', () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(200, {}));
 
       await expect(getProducts()).rejects.toThrow('no contiene la lista');
+    });
+  });
+
+  describe('filtros de catálogo (US04)', () => {
+    it('obtiene las categorías desde el endpoint correspondiente', async () => {
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(crearRespuesta(200, ['electronics', "men's clothing"]));
+
+      await expect(getProductCategories()).resolves.toEqual(['electronics', "men's clothing"]);
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://fakestoreapi.com/products/categories',
+        expect.any(Object),
+      );
+    });
+
+    it('obtiene solo los productos de la categoría seleccionada', async () => {
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(crearRespuesta(200, [PRODUCTO_VALIDO]));
+
+      await expect(getProductsByCategory('women clothing')).resolves.toHaveLength(1);
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://fakestoreapi.com/products/category/women%20clothing',
+        expect.any(Object),
+      );
+    });
+
+    it('restablece el catálogo general cuando no hay filtro', async () => {
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(crearRespuesta(200, [PRODUCTO_VALIDO]));
+
+      await expect(getProductsByCategory('')).resolves.toHaveLength(1);
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://fakestoreapi.com/products',
+        expect.any(Object),
+      );
     });
   });
 

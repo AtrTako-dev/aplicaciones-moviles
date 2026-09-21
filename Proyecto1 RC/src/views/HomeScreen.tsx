@@ -42,7 +42,8 @@ export default function HomeScreen({ navigation }: Props) {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
-          <Text style={styles.logo}>APP1INICIO_CIERRE</Text>
+          <Text style={styles.logo}>STOREFLOW</Text>
+          <Text style={styles.tagline}>Descubre, filtra y gestiona tu catálogo.</Text>
           <Text style={styles.welcome} testID="home-welcome">
             Bienvenido, {usuario?.nombre ?? ''}
           </Text>
@@ -58,13 +59,8 @@ export default function HomeScreen({ navigation }: Props) {
 
           <View style={styles.actions}>
             <PrimaryButton
-              testID="home-catalog-button"
-              title="Ver catálogo"
-              onPress={() => navigation.navigate('Catalog')}
-            />
-            <PrimaryButton
               testID="catalog-button"
-              title="Ver catálogo actualizado"
+              title="Explorar catálogo"
               onPress={() => navigation.navigate('Catalogo')}
             />
             <PrimaryButton
@@ -105,8 +101,15 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 22,
     fontWeight: '800',
-    letterSpacing: 2,
+    letterSpacing: 2.5,
     color: Colors.primary,
+    marginBottom: Spacing.lg,
+  },
+  tagline: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginTop: -Spacing.sm,
     marginBottom: Spacing.lg,
   },
   welcome: {
