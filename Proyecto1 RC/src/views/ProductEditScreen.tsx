@@ -1,5 +1,9 @@
 /**
- * Pantalla de edición de producto (US05, rol Administrador).
+ * Pantalla de edición de producto (US07, rol Administrador).
+ *
+ * Nivel 1 de seguridad: verifica por la sesión local que el rol sea
+ * Administrador antes de mostrar el formulario. La validación se repite
+ * en el servicio (nivel 2) antes de realizar el fetch.
  *
  * Carga la información actual del producto, permite modificarla,
  * valida los campos y envía la petición PUT /products/{id}.
@@ -23,6 +27,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import InputField from '../components/InputField';
 import PrimaryButton from '../components/PrimaryButton';
 import { useProductDetailController } from '../controllers/ProductDetailController';
+import { useSesionLocal } from '../hooks/useSesionLocal';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import type { Product } from '../model/Product';
 import { ProductServiceError } from '../services/ProductDetailService';
@@ -33,11 +38,38 @@ type Props = NativeStackScreenProps<AppStackParamList, 'EditarProducto'>;
 
 export default function ProductEditScreen({ route, navigation }: Props) {
   const { productId } = route.params;
+  const { cargando, esAdministrador, role } = useSesionLocal();
   const {
     status,
     product,
     guardarProducto,
   } = useProductDetailController(productId);
+
+  if (cargando) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.centeredState}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.message}>Verificando permisos...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!esAdministrador) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.centeredState}>
+          <Text style={styles.errorTitle}>No tienes permisos para editar productos.</Text>
+          <Text style={styles.message}>Esta acción está reservada al rol Administrador.</Text>
+          <PrimaryButton
+            title="Volver"
+            onPress={() => navigation.goBack()}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (status === 'loading') {
     return (
@@ -67,7 +99,7 @@ export default function ProductEditScreen({ route, navigation }: Props) {
   return (
     <ProductEditForm
       product={product}
-      onSave={guardarProducto}
+      onSave={(data) => guardarProducto(data, role ?? '')}
       onBack={() => navigation.goBack()}
       onGoCatalog={() => navigation.navigate('Catalogo')}
     />
@@ -114,7 +146,7 @@ function ProductEditForm({ product, onSave, onBack, onGoCatalog }: ProductEditFo
         description: description.trim(),
         category: category.trim(),
       });
-      Alert.alert('Producto actualizado', 'Los cambios se guardaron correctamente.', [
+      Alert.alert('Producto actualizado', 'Producto actualizado (Simulación).', [
         { text: 'OK', onPress: onBack },
       ]);
     } catch (error) {
@@ -201,7 +233,7 @@ function ProductEditForm({ product, onSave, onBack, onGoCatalog }: ProductEditFo
             testID="edit-cancel"
             title="Cancelar"
             variant="ghost"
-            onPress={onGoCatalog}
+            onPress={onBack}
             disabled={saving}
           />
         </ScrollView>

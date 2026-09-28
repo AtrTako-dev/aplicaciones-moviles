@@ -154,13 +154,13 @@ describe('validateRegistrationInput', () => {
 describe('validateProductTitle', () => {
   it('rechaza un título vacío', () => {
     expect(validateProductForm({ title: '', price: '10', description: 'd', category: 'c' }).title).toBe(
-      'Ingresa el título del producto.',
+      'El título es obligatorio',
     );
   });
 
   it('rechaza un título solo con espacios', () => {
     expect(validateProductForm({ title: '  ', price: '10', description: 'd', category: 'c' }).title).toBe(
-      'Ingresa el título del producto.',
+      'El título es obligatorio',
     );
   });
 
@@ -172,19 +172,25 @@ describe('validateProductTitle', () => {
 describe('validateProductPrice', () => {
   it('rechaza un precio vacío', () => {
     expect(validateProductForm({ title: 't', price: '', description: 'd', category: 'c' }).price).toBe(
-      'Ingresa el precio.',
+      'El precio es obligatorio',
     );
   });
 
   it('rechaza un precio no numérico', () => {
     expect(validateProductForm({ title: 't', price: 'abc', description: 'd', category: 'c' }).price).toBe(
-      'Ingresa un precio válido.',
+      'El precio debe ser un número válido',
     );
   });
 
   it('rechaza un precio negativo', () => {
     expect(validateProductForm({ title: 't', price: '-5', description: 'd', category: 'c' }).price).toBe(
-      'Ingresa un precio válido.',
+      'El precio debe ser mayor que 0',
+    );
+  });
+
+  it('rechaza un precio igual a cero', () => {
+    expect(validateProductForm({ title: 't', price: '0', description: 'd', category: 'c' }).price).toBe(
+      'El precio debe ser mayor que 0',
     );
   });
 
@@ -192,8 +198,8 @@ describe('validateProductPrice', () => {
     expect(validateProductForm({ title: 't', price: '45.99', description: 'd', category: 'c' })).toEqual({});
   });
 
-  it('acepta un precio igual a cero', () => {
-    expect(validateProductForm({ title: 't', price: '0', description: 'd', category: 'c' })).toEqual({});
+  it('acepta un precio positivo entero', () => {
+    expect(validateProductForm({ title: 't', price: '15', description: 'd', category: 'c' })).toEqual({});
   });
 });
 
@@ -201,7 +207,7 @@ describe('validateProductDescription', () => {
   it('rechaza una descripción vacía', () => {
     expect(
       validateProductForm({ title: 't', price: '10', description: '', category: 'c' }).description,
-    ).toBe('Ingresa la descripción del producto.');
+    ).toBe('La descripción es obligatoria');
   });
 });
 
@@ -209,7 +215,7 @@ describe('validateProductCategory', () => {
   it('rechaza una categoría vacía', () => {
     expect(
       validateProductForm({ title: 't', price: '10', description: 'd', category: '  ' }).category,
-    ).toBe('Ingresa la categoría del producto.');
+    ).toBe('La categoría es obligatoria');
   });
 });
 

@@ -8,6 +8,14 @@ export interface ProductRating {
   count: number;
 }
 
+/** Campos editables de un producto (US07). */
+export interface ProductEdicion {
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+}
+
 export class ProductParseError extends Error {
   constructor(message: string) {
     super(message);
@@ -49,6 +57,22 @@ export class Product {
   /** Devuelve el precio formateado como moneda. */
   get formattedPrice(): string {
     return `$${this.price.toFixed(2)}`;
+  }
+
+  /**
+   * Devuelve una copia del producto con los campos editables actualizados.
+   * Se usa para conservar localmente la edición simulada de Fake Store API.
+   */
+  conEdiciones(edicion: ProductEdicion): Product {
+    return new Product(
+      this.id,
+      edicion.title,
+      edicion.price,
+      edicion.description,
+      edicion.category,
+      this.image,
+      this.rating,
+    );
   }
 
   /**

@@ -27,7 +27,7 @@ const PRODUCTO_VALIDO = {
   rating: { rate: 4.2, count: 120 },
 };
 
-describe('productService - detalle (US05)', () => {
+describe('productService - detalle y edición (US05/US07)', () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -133,18 +133,22 @@ describe('productService - detalle (US05)', () => {
     });
   });
 
-  describe('updateProduct', () => {
+  describe('updateProduct (US07)', () => {
     it('envía PUT y devuelve el producto actualizado', async () => {
       const fetchMock = jest
         .spyOn(global, 'fetch')
         .mockResolvedValue(crearRespuesta(200, PRODUCTO_VALIDO));
 
-      const result = await updateProduct(1, {
-        title: 'Nuevo título',
-        price: 60,
-        description: 'Descripción',
-        category: 'categories',
-      });
+      const result = await updateProduct(
+        1,
+        {
+          title: 'Nuevo título',
+          price: 60,
+          description: 'Descripción',
+          category: 'categories',
+        },
+        'Administrador',
+      );
 
       expect(result?.id).toBe(1);
       expect(fetchMock).toHaveBeenCalledWith(
@@ -153,9 +157,31 @@ describe('productService - detalle (US05)', () => {
       );
     });
 
+    it('rechaza la edición si el rol no es Administrador sin hacer la petición', async () => {
+      const fetchMock = jest.spyOn(global, 'fetch');
+
+      await expect(
+        updateProduct(
+          1,
+          { title: 'x', price: 1, description: 'x', category: 'x' },
+          'Cliente',
+        ),
+      ).rejects.toThrow('No autorizado');
+
+      await expect(
+        updateProduct(
+          1,
+          { title: 'x', price: 1, description: 'x', category: 'x' },
+          'Auditor',
+        ),
+      ).rejects.toThrow('No autorizado');
+
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
     it('lanza error con id inválido', async () => {
       await expect(
-        updateProduct(-1, { title: 'x', price: 1, description: 'x', category: 'x' }),
+        updateProduct(-1, { title: 'x', price: 1, description: 'x', category: 'x' }, 'Administrador'),
       ).rejects.toThrow('ID de producto inválido');
     });
 
@@ -163,8 +189,52 @@ describe('productService - detalle (US05)', () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(500));
 
       await expect(
-        updateProduct(1, { title: 'x', price: 1, description: 'x', category: 'x' }),
+        updateProduct(1, { title: 'x', price: 1, description: 'x', category: 'x' }, 'Administrador'),
       ).rejects.toThrow('estado HTTP 500');
+    });
+
+    it('conserva la edición localmente porque la API simula la actualización', async () => {
+      jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValueOnce(
+          // Respuesta PUT sin rating: la simulación no devuelve el producto completo.
+          crearRespuesta(200, {
+            id: 99,
+            title: 'Editado',
+            price: 25,
+            description: 'Descripción editada',
+            category: 'nueva categoría',
+          }),
+        )
+        .mockResolvedValueOnce(
+          crearRespuesta(200, {
+            ...PRODUCTO_VALIDO,
+            id: 99,
+            title: 'Original',
+            price: 50,
+            description: 'Descripción original',
+            category: 'categoría original',
+          }),
+        );
+
+      const result = await updateProduct(
+        99,
+        {
+          title: 'Editado',
+          price: 25,
+          description: 'Descripción editada',
+          category: 'nueva categoría',
+        },
+        'Administrador',
+      );
+
+      expect(result).toBeNull();
+
+      const product = await getProductById(99);
+      expect(product.title).toBe('Editado');
+      expect(product.price).toBe(25);
+      expect(product.description).toBe('Descripción editada');
+      expect(product.category).toBe('nueva categoría');
     });
   });
 

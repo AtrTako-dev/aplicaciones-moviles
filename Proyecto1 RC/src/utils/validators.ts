@@ -132,7 +132,7 @@ export interface ProductFormInput {
 
 export function validateProductTitle(title: string): string | null {
   if (title.trim().length === 0) {
-    return 'Ingresa el título del producto.';
+    return 'El título es obligatorio';
   }
   return null;
 }
@@ -140,25 +140,28 @@ export function validateProductTitle(title: string): string | null {
 export function validateProductPrice(price: string): string | null {
   const value = price.trim();
   if (value.length === 0) {
-    return 'Ingresa el precio.';
+    return 'El precio es obligatorio';
   }
   const numero = Number(value);
-  if (!Number.isFinite(numero) || numero < 0) {
-    return 'Ingresa un precio válido.';
+  if (!Number.isFinite(numero)) {
+    return 'El precio debe ser un número válido';
+  }
+  if (numero <= 0) {
+    return 'El precio debe ser mayor que 0';
   }
   return null;
 }
 
 export function validateProductDescription(description: string): string | null {
   if (description.trim().length === 0) {
-    return 'Ingresa la descripción del producto.';
+    return 'La descripción es obligatoria';
   }
   return null;
 }
 
 export function validateProductCategory(category: string): string | null {
   if (category.trim().length === 0) {
-    return 'Ingresa la categoría del producto.';
+    return 'La categoría es obligatoria';
   }
   return null;
 }

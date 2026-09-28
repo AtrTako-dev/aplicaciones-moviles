@@ -2,9 +2,25 @@
  * Servicio encargado de la comunicación con la Fake Store API.
  */
 
-import { Product } from '../model/Product';
+import { Product, ProductEdicion } from '../model/Product';
 
 export const FAKE_STORE_PRODUCTS_URL = 'https://fakestoreapi.com/products';
+
+/** Rol permitido para editar productos (US07). */
+export const ROL_ADMINISTRADOR = 'Administrador';
+
+/**
+ * Caché local de ediciones (US07).
+ * Fake Store API solo simula la actualización y no persiste los cambios;
+ * esta caché conserva el producto editado dentro de la sesión de la app
+ * para que el catálogo y el detalle reflejen la edición.
+ */
+const edicionesLocales = new Map<number, ProductEdicion>();
+
+function aplicarEdicionLocal(product: Product): Product {
+  const edicion = edicionesLocales.get(product.id);
+  return edicion ? product.conEdiciones(edicion) : product;
+}
 
 export async function getProductCategories(signal?: AbortSignal): Promise<string[]> {
   let response: Response;
@@ -33,12 +49,7 @@ export class ProductServiceError extends Error {
   }
 }
 
-export interface ProductUpdateData {
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-}
+export type ProductUpdateData = ProductEdicion;
 
 export interface ProductCreateData {
   title: string;
@@ -145,7 +156,7 @@ export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
   }
 
   try {
-    return json.map((item) => Product.fromJson(item));
+    return json.map((item) => aplicarEdicionLocal(Product.fromJson(item)));
   } catch {
     throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
   }
@@ -182,7 +193,7 @@ export async function getProductsByCategory(
     throw new ProductServiceError('La respuesta no contiene la lista de productos.');
   }
   try {
-    return json.map((item) => Product.fromJson(item));
+    return json.map((item) => aplicarEdicionLocal(Product.fromJson(item)));
   } catch {
     throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
   }
@@ -228,24 +239,34 @@ export async function getProductById(id: number, signal?: AbortSignal): Promise<
   }
 
   try {
-    return Product.fromJson(json);
+    return aplicarEdicionLocal(Product.fromJson(json));
   } catch {
     throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
   }
 }
 
 /**
- * Actualiza un producto vía PUT /products/{id}.
- * Fake Store API responde con el producto resultante; se intenta interpretar
- * y se devuelve, o null si la respuesta no tiene el formato esperado.
+ * Actualiza un producto vía PUT /products/{id} (US07).
+ *
+ * Restricción de seguridad de dos niveles:
+ *  - Nivel 1 (UI): el formulario solo se muestra al rol Administrador.
+ *  - Nivel 2 (servicio): se verifica el rol antes de realizar el fetch.
+ *
+ * Fake Store API no persiste los cambios (simulación), por lo que la
+ * edición se conserva en la caché local para el resto de la sesión.
  */
 export async function updateProduct(
   id: number,
   data: ProductUpdateData,
+  rol: string,
   signal?: AbortSignal,
 ): Promise<Product | null> {
   if (!isValidPositiveId(id)) {
     throw new ProductServiceError('ID de producto inválido.');
+  }
+
+  if (rol !== ROL_ADMINISTRADOR) {
+    throw new ProductServiceError('No autorizado. Solo el rol Administrador puede editar productos.');
   }
 
   let response: Response;
@@ -267,6 +288,9 @@ export async function updateProduct(
     throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
   }
 
+  // La API solo simula la actualización: se conserva localmente.
+  edicionesLocales.set(id, { ...data });
+
   let json: unknown;
   try {
     json = await response.json();
@@ -275,7 +299,7 @@ export async function updateProduct(
   }
 
   try {
-    return Product.fromJson(json);
+    return aplicarEdicionLocal(Product.fromJson(json));
   } catch {
     return null;
   }

@@ -3,7 +3,7 @@
  *
  * Gestiona el estado de la obtención de un producto (loading / success /
  * error), la petición inicial y el reintento, y las operaciones de
- * edición y eliminación para el rol Administrador.
+ * edición (US07) y eliminación para el rol Administrador.
  */
 
 import { useCallback, useEffect, useReducer } from 'react';
@@ -30,7 +30,7 @@ export interface ProductDetailControllerResult {
   isLoading: boolean;
   hasError: boolean;
   retry: () => void;
-  guardarProducto: (data: ProductUpdateData) => Promise<Product | null>;
+  guardarProducto: (data: ProductUpdateData, rol: string) => Promise<Product | null>;
   eliminarProducto: () => Promise<void>;
 }
 
@@ -86,8 +86,8 @@ export function useProductDetailController(productId: number): ProductDetailCont
   useEffect(() => loadProduct(), [loadProduct]);
 
   const guardarProducto = useCallback(
-    async (data: ProductUpdateData): Promise<Product | null> => {
-      return updateProduct(productId, data);
+    async (data: ProductUpdateData, rol: string): Promise<Product | null> => {
+      return updateProduct(productId, data, rol);
     },
     [productId],
   );
