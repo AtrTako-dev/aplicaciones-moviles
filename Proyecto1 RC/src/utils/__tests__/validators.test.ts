@@ -290,7 +290,7 @@ describe('validateProductCreateForm', () => {
 
   it('marca error de precio cuando se ingresan letras', () => {
     const errors = validateProductCreateForm({ ...DATOS_VALIDOS, price: 'ciento doce' });
-    expect(errors.price).toBe('Ingresa un precio válido.');
+    expect(errors.price).toBe('El precio debe ser un número válido');
   });
 
   it('marca error de URL cuando la imagen no es válida', () => {
