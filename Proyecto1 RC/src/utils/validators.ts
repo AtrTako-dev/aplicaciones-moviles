@@ -22,6 +22,7 @@ export interface RegistrationInput {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const URL_PATTERN = /^https?:\/\/[^\s/$.?#][^\s]*$/i;
 
 export function validateEmail(email: string): string | null {
   const value = email.trim();
@@ -179,6 +180,30 @@ export function validateProductForm(input: ProductFormInput): FieldErrors {
   const categoryError = validateProductCategory(input.category);
   if (categoryError) {
     errors.category = categoryError;
+  }
+  return errors;
+}
+
+export interface ProductCreateInput extends ProductFormInput {
+  image: string;
+}
+
+export function validateProductImageUrl(image: string): string | null {
+  const value = image.trim();
+  if (value.length === 0) {
+    return 'Ingresa la URL de la imagen.';
+  }
+  if (!URL_PATTERN.test(value)) {
+    return 'Ingresa una URL válida de imagen.';
+  }
+  return null;
+}
+
+export function validateProductCreateForm(input: ProductCreateInput): FieldErrors {
+  const errors = validateProductForm(input);
+  const imageError = validateProductImageUrl(input.image);
+  if (imageError) {
+    errors.image = imageError;
   }
   return errors;
 }

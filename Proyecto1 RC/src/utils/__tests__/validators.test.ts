@@ -7,7 +7,9 @@ import {
   validateLoginInput,
   validateName,
   validatePassword,
+  validateProductCreateForm,
   validateProductForm,
+  validateProductImageUrl,
   validateRegistrationInput,
 } from '../validators';
 
@@ -225,5 +227,68 @@ describe('validateProductForm', () => {
       category: 'women clothing',
     });
     expect(errors).toEqual({});
+  });
+});
+
+describe('validateProductImageUrl', () => {
+  it('acepta una URL http válida', () => {
+    expect(validateProductImageUrl('http://i.pravatar.cc')).toBeNull();
+  });
+
+  it('acepta una URL https válida', () => {
+    expect(validateProductImageUrl('https://example.com/img/photo.jpg')).toBeNull();
+  });
+
+  it('rechaza una URL vacía', () => {
+    expect(validateProductImageUrl('')).toBe('Ingresa la URL de la imagen.');
+  });
+
+  it('rechaza una URL sin esquema http/https', () => {
+    expect(validateProductImageUrl('example.com/img.jpg')).toBe('Ingresa una URL válida de imagen.');
+  });
+
+  it('rechaza una URL sin dominio', () => {
+    expect(validateProductImageUrl('https://')).toBe('Ingresa una URL válida de imagen.');
+  });
+});
+
+describe('validateProductCreateForm', () => {
+  const DATOS_VALIDOS = {
+    title: 'Auriculares',
+    price: '89.90',
+    description: 'Auriculares inalámbricos.',
+    image: 'https://example.com/auriculares.jpg',
+    category: 'electronics',
+  };
+
+  it('no devuelve errores con datos válidos', () => {
+    expect(validateProductCreateForm(DATOS_VALIDOS)).toEqual({});
+  });
+
+  it('resalta todos los campos vacíos incluyendo la imagen', () => {
+    const errors = validateProductCreateForm({
+      title: '',
+      price: '',
+      description: '',
+      image: '',
+      category: '',
+    });
+    expect(Object.keys(errors).sort()).toEqual([
+      'category',
+      'description',
+      'image',
+      'price',
+      'title',
+    ]);
+  });
+
+  it('marca error de precio cuando se ingresan letras', () => {
+    const errors = validateProductCreateForm({ ...DATOS_VALIDOS, price: 'ciento doce' });
+    expect(errors.price).toBe('Ingresa un precio válido.');
+  });
+
+  it('marca error de URL cuando la imagen no es válida', () => {
+    const errors = validateProductCreateForm({ ...DATOS_VALIDOS, image: 'no-es-una-url' });
+    expect(errors.image).toBe('Ingresa una URL válida de imagen.');
   });
 });

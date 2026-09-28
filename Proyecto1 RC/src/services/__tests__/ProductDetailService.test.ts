@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
+  createProduct,
   deleteProduct,
   getProductCategories,
   getProductById,
@@ -164,6 +165,63 @@ describe('productService - detalle (US05)', () => {
       await expect(
         updateProduct(1, { title: 'x', price: 1, description: 'x', category: 'x' }),
       ).rejects.toThrow('estado HTTP 500');
+    });
+  });
+
+  describe('createProduct', () => {
+    const DATOS_CREAR = {
+      title: 'Nuevo artículo',
+      price: 12.5,
+      description: 'Descripción de prueba',
+      image: 'https://example.com/nuevo.jpg',
+      category: 'electronics',
+    };
+
+    it('envía POST a /products con el cuerpo y devuelve el producto creado', async () => {
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(crearRespuesta(200, { ...DATOS_CREAR, id: 21 }));
+
+      const result = await createProduct(DATOS_CREAR);
+
+      expect(result.id).toBe(21);
+      expect(result.title).toBe('Nuevo artículo');
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://fakestoreapi.com/products',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(DATOS_CREAR),
+        }),
+      );
+    });
+
+    it('acepta una respuesta con solo el nuevo id', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(200, { id: 21 }));
+
+      const result = await createProduct(DATOS_CREAR);
+
+      expect(result.id).toBe(21);
+      expect(result.title).toBe(DATOS_CREAR.title);
+      expect(result.image).toBe(DATOS_CREAR.image);
+    });
+
+    it('lanza error amigable si la respuesta no contiene id', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(200, { foo: 'bar' }));
+
+      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('no contiene el nuevo producto');
+    });
+
+    it('lanza error amigable ante HTTP de error', async () => {
+      jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(500));
+
+      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('estado HTTP 500');
+    });
+
+    it('lanza error amigable ante fallo de red', async () => {
+      jest.spyOn(global, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
+
+      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('No se pudo conectar');
     });
   });
 

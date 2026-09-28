@@ -22,11 +22,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import ProductCard from '../components/ProductCard';
 import { useProductController } from '../controllers/ProductController';
+import { useSesionLocal } from '../hooks/useSesionLocal';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
 
 export default function ProductCatalogScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
+  const { esAdministrador } = useSesionLocal();
   const {
     isLoading,
     hasError,
@@ -99,6 +101,19 @@ export default function ProductCatalogScreen() {
               </ScrollView>
             )}
             <Text style={styles.count}>{products.length} productos disponibles</Text>
+            {esAdministrador ? (
+              <Pressable
+                testID="catalog-add-button"
+                accessibilityRole="button"
+                accessibilityLabel="Agregar producto"
+                onPress={() => navigation.navigate('CrearProducto')}
+                style={({ pressed }) => [
+                  styles.addButton,
+                  pressed && styles.addButtonPressed,
+                ]}>
+                <Text style={styles.addButtonText}>Agregar producto</Text>
+              </Pressable>
+            ) : null}
           </View>
         }
       />
@@ -237,6 +252,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textMuted,
     marginTop: Spacing.xs,
+  },
+  addButton: {
+    marginTop: Spacing.md,
+    backgroundColor: Colors.primary,
+    borderRadius: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    alignItems: 'center',
+  },
+  addButtonPressed: {
+    opacity: 0.8,
+  },
+  addButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: Colors.white,
   },
   centeredState: {
     flex: 1,
