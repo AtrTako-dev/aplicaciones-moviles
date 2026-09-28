@@ -236,6 +236,105 @@ describe('productService - detalle y edición (US05/US07)', () => {
       expect(product.description).toBe('Descripción editada');
       expect(product.category).toBe('nueva categoría');
     });
+
+    it('lanza error y conserva la caché cuando el JSON de la respuesta es inválido', async () => {
+      const respuestaJsonInválido = {
+        ok: true,
+        status: 200,
+        json: async () => {
+          throw new SyntaxError('Unexpected token < in JSON');
+        },
+      } as unknown as Response;
+
+      jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValueOnce(respuestaJsonInválido)
+        .mockResolvedValueOnce(
+          crearRespuesta(200, {
+            ...PRODUCTO_VALIDO,
+            id: 55,
+            title: 'Original',
+            price: 40,
+          }),
+        );
+
+      await expect(
+        updateProduct(
+          55,
+          { title: 'Editado', price: 25, description: 'd', category: 'c' },
+          'Administrador',
+        ),
+      ).rejects.toThrow('La respuesta del servidor no es válida');
+
+      const product = await getProductById(55);
+      expect(product.title).toBe('Original');
+      expect(product.price).toBe(40);
+    });
+
+    it('lanza error y conserva la caché cuando la respuesta no corresponde a una actualización', async () => {
+      jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValueOnce(crearRespuesta(200, { foo: 'bar' }))
+        .mockResolvedValueOnce(
+          crearRespuesta(200, {
+            ...PRODUCTO_VALIDO,
+            id: 65,
+            title: 'Original',
+          }),
+        );
+
+      await expect(
+        updateProduct(
+          65,
+          { title: 'Editado', price: 25, description: 'd', category: 'c' },
+          'Administrador',
+        ),
+      ).rejects.toThrow('no corresponde a una actualización válida');
+
+      const product = await getProductById(65);
+      expect(product.title).toBe('Original');
+    });
+
+    it('devuelve el producto completo aunque la simulación omita el rating si ya se consultó', async () => {
+      jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValueOnce(
+          crearRespuesta(200, {
+            ...PRODUCTO_VALIDO,
+            id: 7,
+            title: 'Original 7',
+          }),
+        )
+        .mockResolvedValueOnce(
+          crearRespuesta(200, {
+            id: 7,
+            title: 'Editado 7',
+            price: 30,
+            description: 'Descripción editada',
+            category: 'categoría editada',
+          }),
+        );
+
+      await getProductById(7);
+
+      const result = await updateProduct(
+        7,
+        {
+          title: 'Editado 7',
+          price: 30,
+          description: 'Descripción editada',
+          category: 'categoría editada',
+        },
+        'Administrador',
+      );
+
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe(7);
+      expect(result?.title).toBe('Editado 7');
+      expect(result?.price).toBe(30);
+      expect(result?.image).toBe(PRODUCTO_VALIDO.image);
+      expect(result?.rating).toEqual(PRODUCTO_VALIDO.rating);
+    });
   });
 
   describe('createProduct', () => {

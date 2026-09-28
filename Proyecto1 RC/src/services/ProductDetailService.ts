@@ -17,9 +17,18 @@ export const ROL_ADMINISTRADOR = 'Administrador';
  */
 const edicionesLocales = new Map<number, ProductEdicion>();
 
+/**
+ * Últimos productos completos conocidos (con image y rating), usados para
+ * reconstruir el producto tras una edición cuando la respuesta del PUT
+ * no incluye todos los campos (la simulación omite rating).
+ */
+const estadoPrevioPorId = new Map<number, Product>();
+
 function aplicarEdicionLocal(product: Product): Product {
   const edicion = edicionesLocales.get(product.id);
-  return edicion ? product.conEdiciones(edicion) : product;
+  const resultado = edicion ? product.conEdiciones(edicion) : product;
+  estadoPrevioPorId.set(product.id, resultado);
+  return resultado;
 }
 
 export async function getProductCategories(signal?: AbortSignal): Promise<string[]> {
@@ -204,6 +213,25 @@ function isValidPositiveId(id: number): boolean {
 }
 
 /**
+ * Comprueba que la respuesta del servidor corresponda a una actualización
+ * exitosa del producto: un objeto con el mismo id y los campos editables
+ * bien tipados.
+ */
+function esRespuestaDeActualizacionValida(json: unknown, id: number): boolean {
+  if (typeof json !== 'object' || json === null || Array.isArray(json)) {
+    return false;
+  }
+  const value = json as Record<string, unknown>;
+  return (
+    value.id === id &&
+    typeof value.title === 'string' &&
+    typeof value.price === 'number' &&
+    typeof value.description === 'string' &&
+    typeof value.category === 'string'
+  );
+}
+
+/**
  * Obtiene un único producto desde /products/{id}.
  * Lanza ProductServiceError ante un id inválido, HTTP != 2xx o una
  * respuesta que no pueda interpretarse como producto.
@@ -254,6 +282,11 @@ export async function getProductById(id: number, signal?: AbortSignal): Promise<
  *
  * Fake Store API no persiste los cambios (simulación), por lo que la
  * edición se conserva en la caché local para el resto de la sesión.
+ *
+ * La caché solo se actualiza después de validar que la respuesta del
+ * servidor corresponde a una actualización exitosa. Si el estado HTTP,
+ * el JSON o la estructura de la respuesta son inválidos, se lanza un error
+ * y se conserva el estado previo del producto.
  */
 export async function updateProduct(
   id: number,
@@ -288,9 +321,6 @@ export async function updateProduct(
     throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
   }
 
-  // La API solo simula la actualización: se conserva localmente.
-  edicionesLocales.set(id, { ...data });
-
   let json: unknown;
   try {
     json = await response.json();
@@ -298,10 +328,20 @@ export async function updateProduct(
     throw new ProductServiceError('La respuesta del servidor no es válida.');
   }
 
+  if (!esRespuestaDeActualizacionValida(json, id)) {
+    throw new ProductServiceError(
+      'La respuesta no corresponde a una actualización válida del producto.',
+    );
+  }
+
+  // Solo se conserva la edición tras validar la respuesta.
+  edicionesLocales.set(id, { ...data });
+
   try {
     return aplicarEdicionLocal(Product.fromJson(json));
   } catch {
-    return null;
+    const previo = estadoPrevioPorId.get(id);
+    return previo ? previo.conEdiciones(data) : null;
   }
 }
 
