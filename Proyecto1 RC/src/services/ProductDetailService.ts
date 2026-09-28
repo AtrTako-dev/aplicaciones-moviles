@@ -40,6 +40,76 @@ export interface ProductUpdateData {
   category: string;
 }
 
+export interface ProductCreateData {
+  title: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+}
+
+export interface ProductCreateResult {
+  id: number;
+  title: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+}
+
+function isRecordObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Registra un producto vía POST /products.
+ * Fake Store API no persiste el artículo; responderá con un nuevo ID
+ * (objeto completo o solo {id}).
+ */
+export async function createProduct(
+  data: ProductCreateData,
+  signal?: AbortSignal,
+): Promise<ProductCreateResult> {
+  let response: Response;
+  try {
+    response = await fetch(FAKE_STORE_PRODUCTS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      signal,
+    });
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw error;
+    }
+    throw new ProductServiceError('No se pudo conectar con el servidor.');
+  }
+
+  if (!response.ok) {
+    throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
+  }
+
+  let json: unknown;
+  try {
+    json = await response.json();
+  } catch {
+    throw new ProductServiceError('La respuesta del servidor no es válida.');
+  }
+
+  if (!isRecordObject(json) || typeof json.id !== 'number' || json.id <= 0) {
+    throw new ProductServiceError('La respuesta no contiene el nuevo producto registrado.');
+  }
+
+  return {
+    id: json.id,
+    title: typeof json.title === 'string' ? json.title : data.title,
+    price: typeof json.price === 'number' ? json.price : data.price,
+    description: typeof json.description === 'string' ? json.description : data.description,
+    image: typeof json.image === 'string' ? json.image : data.image,
+    category: typeof json.category === 'string' ? json.category : data.category,
+  };
+}
+
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
 }
