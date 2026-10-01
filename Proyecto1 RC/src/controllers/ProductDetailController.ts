@@ -31,7 +31,7 @@ export interface ProductDetailControllerResult {
   hasError: boolean;
   retry: () => void;
   guardarProducto: (data: ProductUpdateData, rol: string) => Promise<Product | null>;
-  eliminarProducto: () => Promise<void>;
+  eliminarProducto: (rol: string) => Promise<void>;
 }
 
 const initialState: ProductDetailState = {
@@ -92,9 +92,12 @@ export function useProductDetailController(productId: number): ProductDetailCont
     [productId],
   );
 
-  const eliminarProducto = useCallback(async (): Promise<void> => {
-    await deleteProduct(productId);
-  }, [productId]);
+  const eliminarProducto = useCallback(
+    async (rol: string): Promise<void> => {
+      await deleteProduct(productId, rol);
+    },
+    [productId],
+  );
 
   return {
     status: state.status,

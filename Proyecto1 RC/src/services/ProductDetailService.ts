@@ -85,11 +85,22 @@ function isRecordObject(value: unknown): value is Record<string, unknown> {
  * Registra un producto vía POST /products.
  * Fake Store API no persiste el artículo; responderá con un nuevo ID
  * (objeto completo o solo {id}).
+ *
+ * Restricción de seguridad de dos niveles:
+ *  - Nivel 1 (UI): el botón de creación solo se muestra al rol Administrador.
+ *  - Nivel 2 (servicio): se verifica el rol antes de realizar el fetch.
  */
 export async function createProduct(
   data: ProductCreateData,
+  rol: string,
   signal?: AbortSignal,
 ): Promise<ProductCreateResult> {
+  if (rol !== ROL_ADMINISTRADOR) {
+    throw new ProductServiceError(
+      'No autorizado. Solo el rol Administrador puede registrar productos.',
+    );
+  }
+
   let response: Response;
   try {
     response = await fetch(FAKE_STORE_PRODUCTS_URL, {
@@ -346,11 +357,32 @@ export async function updateProduct(
 }
 
 /**
- * Elimina un producto vía DELETE /products/{id}.
+ * Elimina un producto vía DELETE /products/{id} (US08).
+ *
+ * Restricción de seguridad de dos niveles:
+ *  - Nivel 1 (UI): el botón de eliminar nunca se renderiza para otros roles.
+ *  - Nivel 2 (servicio): se verifica el rol y se bloquea la solicitud antes
+ *    de realizar el fetch si el usuario no es Administrador.
+ *
+ * Nunca se dispara el DELETE desde la vista sin confirmación previa
+ * (Alert nativo), por lo que una cancelación no llega al servicio.
+ *
+ * Fake Store API responde con el objeto "eliminado" pero no lo persiste:
+ * el producto seguirá apareciendo en futuras peticiones GET.
  */
-export async function deleteProduct(id: number, signal?: AbortSignal): Promise<void> {
+export async function deleteProduct(
+  id: number,
+  rol: string,
+  signal?: AbortSignal,
+): Promise<void> {
   if (!isValidPositiveId(id)) {
     throw new ProductServiceError('ID de producto inválido.');
+  }
+
+  if (rol !== ROL_ADMINISTRADOR) {
+    throw new ProductServiceError(
+      'No autorizado. Solo el rol Administrador puede eliminar productos.',
+    );
   }
 
   let response: Response;

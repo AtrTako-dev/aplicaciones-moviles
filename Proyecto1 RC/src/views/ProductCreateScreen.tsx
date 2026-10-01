@@ -36,7 +36,7 @@ import { validateProductCreateForm } from '../utils/validators';
 type Props = NativeStackScreenProps<AppStackParamList, 'CrearProducto'>;
 
 export default function ProductCreateScreen({ navigation }: Props) {
-  const { cargando, esAdministrador } = useSesionLocal();
+  const { cargando, esAdministrador, role } = useSesionLocal();
 
   useEffect(() => {
     if (!cargando && !esAdministrador) {
@@ -59,14 +59,15 @@ export default function ProductCreateScreen({ navigation }: Props) {
     return null;
   }
 
-  return <ProductCreateForm onGoCatalog={() => navigation.replace('Catalogo')} />;
+  return <ProductCreateForm role={role ?? ''} onGoCatalog={() => navigation.replace('Catalogo')} />;
 }
 
 interface ProductCreateFormProps {
+  role: string;
   onGoCatalog: () => void;
 }
 
-function ProductCreateForm({ onGoCatalog }: ProductCreateFormProps) {
+function ProductCreateForm({ role, onGoCatalog }: ProductCreateFormProps) {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
@@ -98,13 +99,16 @@ function ProductCreateForm({ onGoCatalog }: ProductCreateFormProps) {
     }
     setSaving(true);
     try {
-      const creado = await createProduct({
-        title: title.trim(),
-        price: Number(price),
-        description: description.trim(),
-        image: imageUrl.trim(),
-        category: category.trim(),
-      });
+      const creado = await createProduct(
+        {
+          title: title.trim(),
+          price: Number(price),
+          description: description.trim(),
+          image: imageUrl.trim(),
+          category: category.trim(),
+        },
+        role,
+      );
       Alert.alert(
         'Producto creado',
         `El producto se registró correctamente con el ID ${creado.id}.`,

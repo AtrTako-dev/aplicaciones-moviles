@@ -27,6 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSesionLocal } from '../hooks/useSesionLocal';
 import { useProductDetailController } from '../controllers/ProductDetailController';
 import type { AppStackParamList } from '../navigation/AppNavigator';
+import { mostrarMensajeFlotante } from '../utils/toast';
 import { Colors, Spacing } from '../utils/theme';
 import { useRefreshOnFocus } from '../hooks/useRefreshOnFocus';
 
@@ -36,7 +37,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   const { productId } = route.params;
   const { isLoading, hasError, product, retry, eliminarProducto } =
     useProductDetailController(productId);
-  const { cargando, esAdministrador } = useSesionLocal();
+  const { cargando, esAdministrador, role } = useSesionLocal();
 
   useRefreshOnFocus(retry);
 
@@ -51,7 +52,13 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   }, [hasError, navigation]);
 
   const confirmarEliminar = () => {
-    Alert.alert('Eliminar producto', '¿Seguro que deseas eliminar este producto?', [
+    // Nivel 1 de seguridad: el DELETE se bloquea a nivel de código si el
+    // rol no es Administrador (el botón tampoco se renderiza).
+    if (!esAdministrador) {
+      return;
+    }
+
+    Alert.alert('Eliminar producto', '¿Estás seguro de eliminar este producto?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
@@ -59,10 +66,10 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
         onPress: async () => {
           setEliminando(true);
           try {
-            await eliminarProducto();
-            Alert.alert('Producto eliminado', 'El producto se eliminó correctamente.', [
-              { text: 'OK', onPress: () => navigation.navigate('Catalogo') },
-            ]);
+            await eliminarProducto(role ?? '');
+            mostrarMensajeFlotante('Producto eliminado correctamente.', () =>
+              navigation.replace('Catalogo'),
+            );
           } catch {
             Alert.alert('Error', 'No se pudo eliminar el producto. Inténtalo nuevamente.');
           } finally {

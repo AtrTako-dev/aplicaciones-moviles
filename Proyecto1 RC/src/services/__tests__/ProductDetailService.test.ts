@@ -351,7 +351,7 @@ describe('productService - detalle y edición (US05/US07)', () => {
         .spyOn(global, 'fetch')
         .mockResolvedValue(crearRespuesta(200, { ...DATOS_CREAR, id: 21 }));
 
-      const result = await createProduct(DATOS_CREAR);
+      const result = await createProduct(DATOS_CREAR, 'Administrador');
 
       expect(result.id).toBe(21);
       expect(result.title).toBe('Nuevo artículo');
@@ -368,7 +368,7 @@ describe('productService - detalle y edición (US05/US07)', () => {
     it('acepta una respuesta con solo el nuevo id', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(200, { id: 21 }));
 
-      const result = await createProduct(DATOS_CREAR);
+      const result = await createProduct(DATOS_CREAR, 'Administrador');
 
       expect(result.id).toBe(21);
       expect(result.title).toBe(DATOS_CREAR.title);
@@ -378,29 +378,41 @@ describe('productService - detalle y edición (US05/US07)', () => {
     it('lanza error amigable si la respuesta no contiene id', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(200, { foo: 'bar' }));
 
-      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('no contiene el nuevo producto');
+      await expect(createProduct(DATOS_CREAR, 'Administrador')).rejects.toThrow(
+        'no contiene el nuevo producto',
+      );
     });
 
     it('lanza error amigable ante HTTP de error', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(500));
 
-      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('estado HTTP 500');
+      await expect(createProduct(DATOS_CREAR, 'Administrador')).rejects.toThrow('estado HTTP 500');
     });
 
     it('lanza error amigable ante fallo de red', async () => {
       jest.spyOn(global, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
 
-      await expect(createProduct(DATOS_CREAR)).rejects.toThrow('No se pudo conectar');
+      await expect(createProduct(DATOS_CREAR, 'Administrador')).rejects.toThrow(
+        'No se pudo conectar',
+      );
+    });
+
+    it('bloquea el registro para roles no Administrador sin hacer fetch (seguridad)', async () => {
+      const fetchMock = jest.spyOn(global, 'fetch');
+
+      await expect(createProduct(DATOS_CREAR, 'Cliente')).rejects.toThrow('No autorizado');
+      await expect(createProduct(DATOS_CREAR, 'Auditor')).rejects.toThrow('No autorizado');
+      expect(fetchMock).not.toHaveBeenCalled();
     });
   });
 
-  describe('deleteProduct', () => {
+  describe('deleteProduct (US08)', () => {
     it('envía DELETE y resuelve en éxito', async () => {
       const fetchMock = jest
         .spyOn(global, 'fetch')
         .mockResolvedValue(crearRespuesta(200));
 
-      await expect(deleteProduct(3)).resolves.toBeUndefined();
+      await expect(deleteProduct(3, 'Administrador')).resolves.toBeUndefined();
       expect(fetchMock).toHaveBeenCalledWith(
         'https://fakestoreapi.com/products/3',
         expect.objectContaining({ method: 'DELETE' }),
@@ -408,13 +420,25 @@ describe('productService - detalle y edición (US05/US07)', () => {
     });
 
     it('lanza error con id inválido', async () => {
-      await expect(deleteProduct(0)).rejects.toThrow('ID de producto inválido');
+      await expect(deleteProduct(0, 'Administrador')).rejects.toThrow('ID de producto inválido');
     });
 
     it('lanza error ante HTTP de error', async () => {
       jest.spyOn(global, 'fetch').mockResolvedValue(crearRespuesta(404));
 
-      await expect(deleteProduct(9)).rejects.toThrow('estado HTTP 404');
+      await expect(deleteProduct(9, 'Administrador')).rejects.toThrow('estado HTTP 404');
+    });
+
+    it('bloquea el DELETE para roles no Administrador sin hacer fetch (seguridad)', async () => {
+      const fetchMock = jest.spyOn(global, 'fetch');
+
+      await expect(deleteProduct(3, 'Cliente')).rejects.toThrow('No autorizado');
+      await expect(deleteProduct(3, 'Auditor')).rejects.toThrow('No autorizado');
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('prioriza el error de id inválido sobre el de rol', async () => {
+      await expect(deleteProduct(0, 'Cliente')).rejects.toThrow('ID de producto inválido');
     });
   });
 });
