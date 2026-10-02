@@ -1,5 +1,15 @@
 package com.example.app1_iniciocierre.ui.theme
 
+// ================================================================
+// Theme.kt — MAPA DEL ARCHIVO
+// ================================================================
+// Propósito: Configura paleta, colores dinámicos y tipografía del tema Compose.
+// Secciones: 1. IMPORTACIONES, 2. PALETA OSCURA, 3. PALETA CLARA, 4. FUNCIÓN — elegir y aplicar tema, SELECCIÓN DEL ESQUEMA, APLICAR COLORES Y TIPOGRAFÍA
+
+
+// ================================================================
+// 1. IMPORTACIONES
+// ================================================================
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,12 +21,18 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+// ================================================================
+// 2. PALETA OSCURA
+// ================================================================
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
+// ================================================================
+// 3. PALETA CLARA
+// ================================================================
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
@@ -33,6 +49,9 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+// ================================================================
+// 4. FUNCIÓN — elegir y aplicar tema
+// ================================================================
 @Composable
 fun APP1_INICIOCIERRETheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -40,6 +59,9 @@ fun APP1_INICIOCIERRETheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    // ================================================================
+    // SELECCIÓN DEL ESQUEMA
+    // ================================================================
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -50,6 +72,9 @@ fun APP1_INICIOCIERRETheme(
         else -> LightColorScheme
     }
 
+    // ================================================================
+    // APLICAR COLORES Y TIPOGRAFÍA
+    // ================================================================
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,

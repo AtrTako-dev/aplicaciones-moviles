@@ -1,5 +1,15 @@
 package com.example.app1_iniciocierre.view
 
+// ================================================================
+// LoginView.kt — MAPA DEL ARCHIVO
+// ================================================================
+// Propósito: Dibuja la pantalla de acceso y delega la autenticación al controlador.
+// Secciones: 1. IMPORTACIONES, 2. PANTALLA Y ACCIONES RECIBIDAS, Login is the root of the unauthenticated flow; protected content is never restored., 3. COMPORTAMIENTO DEL BOTÓN ATRÁS, 4. DATOS Y ESTADO — credenciales, carga y mensaje, 5. CORRUTINA — ejecutar el inicio de sesión, 6. INTERFAZ — distribución de campos y textos, CAMPOS — usuario y contraseña, 7. BOTÓN — llamar al controlador y mostrar resultado, 8. MENSAJES — mostrar errores de acceso
+
+
+// ================================================================
+// 1. IMPORTACIONES
+// ================================================================
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +40,10 @@ import com.example.app1_iniciocierre.model.Sesion
 import kotlinx.coroutines.launch
 
 
+// ================================================================
+// US01 — LOGIN: formulario, estados de carga y mensajes.
+// 2. PANTALLA Y ACCIONES RECIBIDAS
+// ================================================================
 @Composable
 fun LoginView(
     controller: LoginController,
@@ -37,8 +51,14 @@ fun LoginView(
 ) {
 
     // Login is the root of the unauthenticated flow; protected content is never restored.
+    // ================================================================
+    // 3. COMPORTAMIENTO DEL BOTÓN ATRÁS
+    // ================================================================
     BackHandler { }
 
+    // ================================================================
+    // 4. DATOS Y ESTADO — credenciales, carga y mensaje
+    // ================================================================
     var username by remember {
         mutableStateOf("")
     }
@@ -56,9 +76,15 @@ fun LoginView(
     }
 
 
+    // ================================================================
+    // 5. CORRUTINA — ejecutar el inicio de sesión
+    // ================================================================
     val scope = rememberCoroutineScope()
 
 
+    // ================================================================
+    // 6. INTERFAZ — distribución de campos y textos
+    // ================================================================
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,6 +106,9 @@ fun LoginView(
         )
 
 
+        // ================================================================
+        // CAMPOS — usuario y contraseña
+        // ================================================================
         OutlinedTextField(
             value = username,
 
@@ -123,6 +152,9 @@ fun LoginView(
         )
 
 
+        // ================================================================
+        // 7. BOTÓN — llamar al controlador y mostrar resultado
+        // ================================================================
         Button(
 
             enabled = !cargando,
@@ -200,6 +232,9 @@ fun LoginView(
         )
 
 
+        // ================================================================
+        // 8. MENSAJES — mostrar errores de acceso
+        // ================================================================
         if (mensaje.isNotEmpty()) {
             Surface(color = MaterialTheme.colorScheme.errorContainer) {
                 Text(

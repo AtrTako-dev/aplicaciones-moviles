@@ -1,14 +1,23 @@
+// ================================================================
+// 1. PLUGINS DEL MÓDULO
+// ================================================================
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
 
+// ================================================================
+// 2. CONFIGURACIÓN ANDROID
+// ================================================================
 android {
     namespace = "com.example.app1_iniciocierre"
     compileSdk {
         version = release(37)
     }
 
+// ================================================================
+// IDENTIDAD, VERSIONES Y PRUEBAS
+// ================================================================
     defaultConfig {
         applicationId = "com.example.app1_iniciocierre"
         minSdk = 24
@@ -19,6 +28,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+// ================================================================
+// COMPILACIÓN RELEASE
+// ================================================================
     buildTypes {
         release {
             optimization {
@@ -26,15 +38,24 @@ android {
             }
         }
     }
+// ================================================================
+// VERSIÓN DE JAVA
+// ================================================================
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+// ================================================================
+// HABILITAR COMPOSE
+// ================================================================
     buildFeatures {
         compose = true
     }
 }
 
+// ================================================================
+// 3. DEPENDENCIAS DE APP Y PRUEBAS
+// ================================================================
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

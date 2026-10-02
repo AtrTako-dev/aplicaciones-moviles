@@ -1,14 +1,17 @@
 package com.example.app1_iniciocierre.view
 
+// ============================================================
+// 1. IMPORTACIONES
+// ============================================================
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -18,6 +21,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,14 +49,23 @@ import com.example.app1_iniciocierre.model.Rol
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+// ============================================================
+// US05 — DETALLE: GET por ID y vista de consulta para todos los roles.
+// US07 — edición precargada solo para Administrador.
+// US08 — confirmación y DELETE solo para Administrador.
+// Las secciones numeradas permiten ubicar cada historia con Ctrl+F.
+// ============================================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoView(
     productoId: Int,
     rol: Rol,
     servicio: ProductoService,
-    volverCatalogo: () -> Unit
+    volverCatalogo: (String?) -> Unit
 ) {
+    // ------------------------------------------------------------
+    // 3. DATOS Y ESTADO — producto, formulario y diálogos
+    // ------------------------------------------------------------
     var producto by remember { mutableStateOf<Producto?>(null) }
     var cargando by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
@@ -59,19 +73,24 @@ fun DetalleProductoView(
     var mensaje by remember { mutableStateOf<String?>(null) }
     var editando by remember { mutableStateOf(false) }
     var confirmarEliminacion by remember { mutableStateOf(false) }
-    var guardando by remember { mutableStateOf(false) }
+    var enviando by remember { mutableStateOf(false) }
     var tituloEditado by remember { mutableStateOf("") }
     var precioEditado by remember { mutableStateOf("") }
     var descripcionEditada by remember { mutableStateOf("") }
+    var categoriaEditada by remember { mutableStateOf("") }
+    var erroresFormulario by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    // ------------------------------------------------------------
+    // US05 — CONSULTA /products/{id}: carga, error y retorno al catálogo.
+    // ------------------------------------------------------------
     LaunchedEffect(productoId, reintento) {
         cargando = true
         error = false
         producto = null
         when (val resultado = servicio.obtenerProducto(productoId)) {
             is ResultadoProductos.Exito -> producto = resultado.datos
-
             ResultadoProductos.Error -> error = true
         }
         cargando = false
@@ -80,35 +99,34 @@ fun DetalleProductoView(
     LaunchedEffect(error) {
         if (error) {
             delay(1800)
-            volverCatalogo()
+            volverCatalogo(null)
         }
     }
 
+    // ------------------------------------------------------------
+    // 5. DISTRIBUCIÓN — barra superior y contenido según el estado
+    // ------------------------------------------------------------
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Detalle del producto") },
                 navigationIcon = {
-                    TextButton(onClick = volverCatalogo) { Text("← Volver") }
+                    TextButton(onClick = { volverCatalogo(null) }) { Text("← Volver") }
                 }
             )
         }
     ) { padding ->
         when {
             cargando -> Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
 
             error -> ErrorDetailContent(
                 modifier = Modifier.padding(padding),
-                onRetry = {
-                    error = false
-                    reintento++
-                },
-                volverCatalogo = volverCatalogo
+                onRetry = { error = false; reintento++ },
+                volverCatalogo = { volverCatalogo(null) }
             )
 
             producto != null -> DetalleContent(
@@ -120,6 +138,8 @@ fun DetalleProductoView(
                     tituloEditado = producto!!.title
                     precioEditado = producto!!.price.toString()
                     descripcionEditada = producto!!.description
+                    categoriaEditada = producto!!.category
+                    erroresFormulario = emptyMap()
                     mensaje = null
                     editando = true
                 },
@@ -128,54 +148,53 @@ fun DetalleProductoView(
         }
     }
 
+    // ------------------------------------------------------------
+    // 6. US07 — FORMULARIO DE EDICIÓN CON CAMPOS PRECARGADOS
+    // ------------------------------------------------------------
     if (editando && producto != null) {
         AlertDialog(
-            onDismissRequest = { if (!guardando) editando = false },
+            onDismissRequest = { if (!enviando) editando = false },
             title = { Text("Editar producto") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = tituloEditado,
-                        onValueChange = { tituloEditado = it },
-                        label = { Text("Título") },
-                        enabled = !guardando,
-                        singleLine = true
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CampoEdicion("Título", tituloEditado, { tituloEditado = it }, erroresFormulario["titulo"], !enviando)
+                    CampoEdicion("Precio", precioEditado, { precioEditado = it }, erroresFormulario["precio"], !enviando)
+                    CampoEdicion(
+                        "Descripción", descripcionEditada, { descripcionEditada = it },
+                        erroresFormulario["descripcion"], !enviando, multilinea = true
                     )
-                    OutlinedTextField(
-                        value = precioEditado,
-                        onValueChange = { precioEditado = it },
-                        label = { Text("Precio") },
-                        enabled = !guardando,
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = descripcionEditada,
-                        onValueChange = { descripcionEditada = it },
-                        label = { Text("Descripción") },
-                        enabled = !guardando,
-                        minLines = 3
-                    )
+                    CampoEdicion("Categoría", categoriaEditada, { categoriaEditada = it }, erroresFormulario["categoria"], !enviando)
                 }
             },
             confirmButton = {
                 TextButton(
-                    enabled = !guardando,
+                    enabled = !enviando,
                     onClick = {
                         val precio = precioEditado.replace(',', '.').toDoubleOrNull()
-                        if (tituloEditado.isBlank() || precio == null || precio < 0) {
-                            mensaje = "Ingresa un título y un precio válido"
-                            return@TextButton
+                        erroresFormulario = buildMap {
+                            if (tituloEditado.isBlank()) put("titulo", "El título es obligatorio")
+                            if (precio == null || !precio.isFinite() || precio < 0) {
+                                put("precio", "Ingresa un precio numérico válido")
+                            }
+                            if (descripcionEditada.isBlank()) put("descripcion", "La descripción es obligatoria")
+                            if (categoriaEditada.isBlank()) put("categoria", "La categoría es obligatoria")
                         }
-                        guardando = true
+                        if (erroresFormulario.isNotEmpty()) return@TextButton
+
+                        enviando = true
                         scope.launch {
                             when (
                                 val resultado = servicio.actualizarProducto(
-                                    producto!!.id,
-                                    ActualizarProductoRequest(
+                                    rol = rol,
+                                    id = producto!!.id,
+                                    producto = ActualizarProductoRequest(
                                         title = tituloEditado.trim(),
-                                        price = precio,
+                                        price = precio!!,
                                         description = descripcionEditada.trim(),
-                                        category = producto!!.category,
+                                        category = categoriaEditada.trim(),
                                         image = producto!!.image
                                     )
                                 )
@@ -183,59 +202,62 @@ fun DetalleProductoView(
                                 is ResultadoProductos.Exito -> {
                                     producto = resultado.datos
                                     editando = false
-                                    guardando = false
-                                    mensaje = "Producto actualizado correctamente"
+                                    mensaje = "Producto actualizado (Simulación)"
                                 }
-
                                 ResultadoProductos.Error -> {
-                                    guardando = false
-                                    mensaje = "No se pudo actualizar el producto"
+                                    snackbarHostState.showSnackbar("No se pudo actualizar el producto")
                                 }
                             }
+                            enviando = false
                         }
                     }
-                ) { Text("Guardar") }
+                ) {
+                    if (enviando) CircularProgressIndicator() else Text("Guardar")
+                }
             },
             dismissButton = {
-                TextButton(
-                    enabled = !guardando,
-                    onClick = { editando = false }
-                ) { Text("Cancelar") }
+                TextButton(enabled = !enviando, onClick = { editando = false }) {
+                    Text("Cancelar")
+                }
             }
         )
     }
 
+    // ------------------------------------------------------------
+    // 7. US08 — CONFIRMACIÓN OBLIGATORIA ANTES DE DELETE
+    // ------------------------------------------------------------
     if (confirmarEliminacion && producto != null) {
         AlertDialog(
-            onDismissRequest = { if (!guardando) confirmarEliminacion = false },
+            onDismissRequest = { if (!enviando) confirmarEliminacion = false },
             title = { Text("Eliminar producto") },
             text = { Text("¿Seguro que deseas eliminar “${producto!!.title}”?") },
             confirmButton = {
                 TextButton(
-                    enabled = !guardando,
+                    enabled = !enviando,
                     onClick = {
-                        guardando = true
+                        enviando = true
                         scope.launch {
-                            when (servicio.eliminarProducto(producto!!.id)) {
+                            when (servicio.eliminarProducto(rol, producto!!.id)) {
                                 is ResultadoProductos.Exito -> {
-                                    guardando = false
                                     confirmarEliminacion = false
-                                    volverCatalogo()
+                                    enviando = false
+                                    volverCatalogo("Producto eliminado (Simulación)")
                                 }
-
                                 ResultadoProductos.Error -> {
-                                    guardando = false
+                                    enviando = false
                                     confirmarEliminacion = false
-                                    mensaje = "No se pudo eliminar el producto"
+                                    snackbarHostState.showSnackbar("No se pudo eliminar el producto")
                                 }
                             }
                         }
                     }
-                ) { Text("Eliminar") }
+                ) {
+                    if (enviando) CircularProgressIndicator() else Text("Eliminar")
+                }
             },
             dismissButton = {
                 TextButton(
-                    enabled = !guardando,
+                    enabled = !enviando,
                     onClick = { confirmarEliminacion = false }
                 ) { Text("Cancelar") }
             }
@@ -243,6 +265,34 @@ fun DetalleProductoView(
     }
 }
 
+// ============================================================
+// 8. CAMPOS DEL FORMULARIO — entrada, validación visual y error
+// ============================================================
+@Composable
+private fun CampoEdicion(
+    etiqueta: String,
+    valor: String,
+    alCambiar: (String) -> Unit,
+    error: String?,
+    habilitado: Boolean,
+    multilinea: Boolean = false
+) {
+    OutlinedTextField(
+        value = valor,
+        onValueChange = alCambiar,
+        label = { Text(etiqueta) },
+        enabled = habilitado,
+        isError = error != null,
+        supportingText = { if (error != null) Text(error) },
+        singleLine = !multilinea,
+        minLines = if (multilinea) 3 else 1,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+// ============================================================
+// US05 — presentación completa; US07/US08 — acciones solo para Administrador.
+// ============================================================
 @Composable
 private fun DetalleContent(
     producto: Producto,
@@ -253,19 +303,14 @@ private fun DetalleContent(
     onEliminar: () -> Unit
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         AsyncImage(
             model = producto.image,
             contentDescription = "Imagen de ${producto.title}",
             contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(260.dp)
+            modifier = Modifier.fillMaxWidth().height(260.dp)
         )
         Text(producto.title, style = MaterialTheme.typography.headlineSmall)
         Text(
@@ -278,6 +323,7 @@ private fun DetalleContent(
         Text(producto.description, style = MaterialTheme.typography.bodyLarge)
 
         if (rol == Rol.ADMINISTRADOR) {
+            // Botones visibles solo para administradores; el servicio también verifica el rol.
             RowActions(onEditar = onEditar, onEliminar = onEliminar)
         }
 
@@ -289,17 +335,20 @@ private fun DetalleContent(
     }
 }
 
+// ============================================================
+// 10. BOTONES — Editar abre el formulario; Eliminar pide confirmar
+// ============================================================
 @Composable
 private fun RowActions(onEditar: () -> Unit, onEliminar: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Button(onClick = onEditar, modifier = Modifier.weight(1f)) { Text("Editar") }
         Button(onClick = onEliminar, modifier = Modifier.weight(1f)) { Text("Eliminar") }
     }
 }
 
+// ============================================================
+// 11. ESTADO DE ERROR — reintentar o regresar al catálogo
+// ============================================================
 @Composable
 private fun ErrorDetailContent(
     modifier: Modifier,
@@ -307,9 +356,7 @@ private fun ErrorDetailContent(
     volverCatalogo: () -> Unit
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

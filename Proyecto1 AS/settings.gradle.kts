@@ -1,3 +1,6 @@
+// ================================================================
+// 1. REPOSITORIOS DE PLUGINS
+// ================================================================
 pluginManagement {
     repositories {
         google {
@@ -11,9 +14,15 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+// ================================================================
+// 2. PLUGINS DE CONFIGURACIÓN
+// ================================================================
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+// ================================================================
+// 3. REPOSITORIOS DE DEPENDENCIAS
+// ================================================================
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -22,5 +31,8 @@ dependencyResolutionManagement {
     }
 }
 
+// ================================================================
+// 4. IDENTIDAD Y MÓDULOS
+// ================================================================
 rootProject.name = "APP1_INICIOCIERRE"
 include(":app")
