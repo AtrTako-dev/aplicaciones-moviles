@@ -256,6 +256,18 @@ describe('validateProductImageUrl', () => {
   it('rechaza una URL sin dominio', () => {
     expect(validateProductImageUrl('https://')).toBe('Ingresa una URL válida de imagen.');
   });
+
+  it('rechaza una URL con puerto inválido', () => {
+    expect(validateProductImageUrl('https://example.com:abc/image.jpg')).toBe(
+      'Ingresa una URL válida de imagen.',
+    );
+  });
+
+  it('rechaza una URL sin autoridad', () => {
+    expect(validateProductImageUrl('https:///example.com/image.jpg')).toBe(
+      'Ingresa una URL válida de imagen.',
+    );
+  });
 });
 
 describe('validateProductCreateForm', () => {

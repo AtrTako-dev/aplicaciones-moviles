@@ -22,7 +22,7 @@ export interface RegistrationInput {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const URL_PATTERN = /^https?:\/\/[^\s/$.?#][^\s]*$/i;
+const HTTP_URL_PATTERN = /^https?:\/\/[^/?#]+/i;
 
 export function validateEmail(email: string): string | null {
   const value = email.trim();
@@ -196,9 +196,19 @@ export function validateProductImageUrl(image: string): string | null {
   if (value.length === 0) {
     return 'Ingresa la URL de la imagen.';
   }
-  if (!URL_PATTERN.test(value)) {
+  if (!HTTP_URL_PATTERN.test(value)) {
     return 'Ingresa una URL válida de imagen.';
   }
+
+  try {
+    const url = new URL(value);
+    if ((url.protocol !== 'http:' && url.protocol !== 'https:') || !url.hostname) {
+      return 'Ingresa una URL válida de imagen.';
+    }
+  } catch {
+    return 'Ingresa una URL válida de imagen.';
+  }
+
   return null;
 }
 
