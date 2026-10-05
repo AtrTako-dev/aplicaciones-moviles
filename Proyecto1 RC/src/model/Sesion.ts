@@ -1,5 +1,6 @@
 import { DatosUsuario, Usuario } from './Usuario';
 
+// #################### US01 y US02: Datos de sesión segura #################
 export interface SesionGuardada {
   token: string;
   usuario: DatosUsuario;
@@ -45,3 +46,4 @@ export class Sesion {
     return new Sesion(parsed.token, Usuario.desdeObject(parsed.usuario), parsed.fecha);
   }
 }
+// ######################## Fin de US01 y US02 ##############################

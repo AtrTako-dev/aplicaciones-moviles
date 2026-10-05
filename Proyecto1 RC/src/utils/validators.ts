@@ -22,7 +22,7 @@ export interface RegistrationInput {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const URL_PATTERN = /^https?:\/\/[^\s/$.?#][^\s]*$/i;
+const HTTP_URL_PATTERN = /^https?:\/\/[^/?#]+/i;
 
 export function validateEmail(email: string): string | null {
   const value = email.trim();
@@ -69,6 +69,7 @@ export function validateUsername(username: string): string | null {
   return null;
 }
 
+// #################### US01: Validación local de credenciales ####################
 export function validateLoginPassword(password: string): string | null {
   if (password.length === 0) {
     return 'Ingresa tu contraseña.';
@@ -88,6 +89,7 @@ export function validateLoginCredentials(input: LoginCredentialsInput): FieldErr
   }
   return errors;
 }
+// ############################################ Fin de US01 ############################################
 
 export function validateLoginInput(input: LoginInput): FieldErrors {
   const errors: FieldErrors = {};
@@ -130,6 +132,7 @@ export interface ProductFormInput {
   category: string;
 }
 
+// #################### US06 y US07: Validación local de formularios de producto ####################
 export function validateProductTitle(title: string): string | null {
   if (title.trim().length === 0) {
     return 'El título es obligatorio';
@@ -186,19 +189,31 @@ export function validateProductForm(input: ProductFormInput): FieldErrors {
   }
   return errors;
 }
+// ###################################### Fin de US06 y US07 ######################################
 
 export interface ProductCreateInput extends ProductFormInput {
   image: string;
 }
 
+// #################### US06: Validación de URL para el nuevo producto ####################
 export function validateProductImageUrl(image: string): string | null {
   const value = image.trim();
   if (value.length === 0) {
     return 'Ingresa la URL de la imagen.';
   }
-  if (!URL_PATTERN.test(value)) {
+  if (!HTTP_URL_PATTERN.test(value)) {
     return 'Ingresa una URL válida de imagen.';
   }
+
+  try {
+    const url = new URL(value);
+    if ((url.protocol !== 'http:' && url.protocol !== 'https:') || !url.hostname) {
+      return 'Ingresa una URL válida de imagen.';
+    }
+  } catch {
+    return 'Ingresa una URL válida de imagen.';
+  }
+
   return null;
 }
 
@@ -210,3 +225,4 @@ export function validateProductCreateForm(input: ProductCreateInput): FieldError
   }
   return errors;
 }
+// ############################################ Fin de US06 ############################################

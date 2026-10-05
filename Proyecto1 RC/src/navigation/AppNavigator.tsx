@@ -45,6 +45,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
+      {/* US02: El cierre desmonta la pila protegida y crea una pila nueva de Login. */}
       {usuario ? (
         <AppStack.Navigator screenOptions={{ headerShown: false }}>
           <AppStack.Screen name="Home" component={HomeScreen} options={{ gestureEnabled: false }} />

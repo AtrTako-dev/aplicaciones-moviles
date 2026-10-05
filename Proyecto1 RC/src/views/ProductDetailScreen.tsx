@@ -33,6 +33,7 @@ import { useRefreshOnFocus } from '../hooks/useRefreshOnFocus';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'DetalleProducto'>;
 
+// #################### US05: Detalle de producto por rol ##################
 export default function ProductDetailScreen({ route, navigation }: Props) {
   const { productId } = route.params;
   const { isLoading, hasError, product, retry, eliminarProducto } =
@@ -149,6 +150,7 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
 
         {esAdministrador ? (
           <View style={styles.adminActions}>
+            {/* #################### US07: Acción de editar ################## */}
             <Pressable
               testID="detail-edit-button"
               accessibilityRole="button"
@@ -162,6 +164,8 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
               ]}>
               <Text style={styles.primaryButtonText}>Editar</Text>
             </Pressable>
+            {/* ######################## Fin de US07 ######################## */}
+            {/* #################### US08: Acción de eliminar ############### */}
             <Pressable
               testID="detail-delete-button"
               accessibilityRole="button"
@@ -175,12 +179,14 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
               ]}>
               <Text style={styles.dangerButtonText}>Eliminar</Text>
             </Pressable>
+            {/* ######################## Fin de US08 ######################## */}
           </View>
         ) : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
+// ############################ Fin de US05 ##################################
 
 const styles = StyleSheet.create({
   safeArea: {

@@ -31,6 +31,7 @@ function aplicarEdicionLocal(product: Product): Product {
   return resultado;
 }
 
+// #################### US04: Consultar categorías ##########################
 export async function getProductCategories(signal?: AbortSignal): Promise<string[]> {
   let response: Response;
   try {
@@ -50,6 +51,7 @@ export async function getProductCategories(signal?: AbortSignal): Promise<string
   }
   return json;
 }
+// ############################ Fin de US04 ##################################
 
 export class ProductServiceError extends Error {
   constructor(message: string) {
@@ -90,6 +92,7 @@ function isRecordObject(value: unknown): value is Record<string, unknown> {
  *  - Nivel 1 (UI): el botón de creación solo se muestra al rol Administrador.
  *  - Nivel 2 (servicio): se verifica el rol antes de realizar el fetch.
  */
+// #################### US06: Crear producto por POST ######################
 export async function createProduct(
   data: ProductCreateData,
   rol: string,
@@ -140,6 +143,7 @@ export async function createProduct(
     category: typeof json.category === 'string' ? json.category : data.category,
   };
 }
+// ############################ Fin de US06 ##################################
 
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
@@ -149,6 +153,7 @@ function isAbortError(error: unknown): boolean {
  * Realiza la petición GET a /products y devuelve la lista de productos.
  * Lanza ProductServiceError si la petición o el procesamiento fallan.
  */
+// #################### US03: Consultar catálogo completo ###################
 export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
   let response: Response;
   try {
@@ -186,7 +191,9 @@ export async function getProducts(signal?: AbortSignal): Promise<Product[]> {
 export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
   return getProducts(signal);
 }
+// ############################ Fin de US03 ##################################
 
+// #################### US04: Filtrar catálogo por categoría ################
 export async function getProductsByCategory(
   category: string,
   signal?: AbortSignal,
@@ -218,7 +225,9 @@ export async function getProductsByCategory(
     throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
   }
 }
+// ############################ Fin de US04 ##################################
 
+// Validación de identificadores utilizada por US05, US07 y US08.
 function isValidPositiveId(id: number): boolean {
   return Number.isInteger(id) && id > 0;
 }
@@ -247,6 +256,7 @@ function esRespuestaDeActualizacionValida(json: unknown, id: number): boolean {
  * Lanza ProductServiceError ante un id inválido, HTTP != 2xx o una
  * respuesta que no pueda interpretarse como producto.
  */
+// #################### US05: Consultar detalle del producto ################
 export async function getProductById(id: number, signal?: AbortSignal): Promise<Product> {
   if (!isValidPositiveId(id)) {
     throw new ProductServiceError('ID de producto inválido.');
@@ -283,6 +293,7 @@ export async function getProductById(id: number, signal?: AbortSignal): Promise<
     throw new ProductServiceError('Los datos recibidos no se pudieron interpretar.');
   }
 }
+// ############################ Fin de US05 ##################################
 
 /**
  * Actualiza un producto vía PUT /products/{id} (US07).
@@ -299,6 +310,7 @@ export async function getProductById(id: number, signal?: AbortSignal): Promise<
  * el JSON o la estructura de la respuesta son inválidos, se lanza un error
  * y se conserva el estado previo del producto.
  */
+// #################### US07: Editar producto por PUT #######################
 export async function updateProduct(
   id: number,
   data: ProductUpdateData,
@@ -355,6 +367,7 @@ export async function updateProduct(
     return previo ? previo.conEdiciones(data) : null;
   }
 }
+// ############################ Fin de US07 ##################################
 
 /**
  * Elimina un producto vía DELETE /products/{id} (US08).
@@ -370,6 +383,7 @@ export async function updateProduct(
  * Fake Store API responde con el objeto "eliminado" pero no lo persiste:
  * el producto seguirá apareciendo en futuras peticiones GET.
  */
+// #################### US08: Eliminar producto por DELETE ##################
 export async function deleteProduct(
   id: number,
   rol: string,
@@ -402,3 +416,4 @@ export async function deleteProduct(
     throw new ProductServiceError(`El servidor respondió con el estado HTTP ${response.status}.`);
   }
 }
+// ############################ Fin de US08 ##################################

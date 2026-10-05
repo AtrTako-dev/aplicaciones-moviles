@@ -9,12 +9,14 @@ export interface ProductRating {
 }
 
 /** Campos editables de un producto (US07). */
+// #################### US07: Campos que se pueden editar ####################
 export interface ProductEdicion {
   title: string;
   price: number;
   description: string;
   category: string;
 }
+// ############################ Fin de US07 ##################################
 
 export class ProductParseError extends Error {
   constructor(message: string) {
@@ -27,6 +29,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+// #################### US03–US05: Modelo de producto #######################
 export class Product {
   readonly id: number;
   readonly title: string;
@@ -63,6 +66,7 @@ export class Product {
    * Devuelve una copia del producto con los campos editables actualizados.
    * Se usa para conservar localmente la edición simulada de Fake Store API.
    */
+  // #################### US07: Aplicar edición simulada ####################
   conEdiciones(edicion: ProductEdicion): Product {
     return new Product(
       this.id,
@@ -74,6 +78,7 @@ export class Product {
       this.rating,
     );
   }
+  // ############################ Fin de US07 ################################
 
   /**
    * Convierte un objeto desconocido (respuesta de la API) en una instancia
@@ -109,3 +114,4 @@ export class Product {
     });
   }
 }
+// ######################## Fin de US03–US05 ################################

@@ -1,3 +1,4 @@
+// #################### US01: Roles de acceso ###############################
 export const ROLES = {
   ADMINISTRADOR: 'Administrador',
   AUDITOR: 'Auditor',
@@ -5,3 +6,4 @@ export const ROLES = {
 } as const;
 
 export type Rol = (typeof ROLES)[keyof typeof ROLES];
+// ############################ Fin de US01 ##################################

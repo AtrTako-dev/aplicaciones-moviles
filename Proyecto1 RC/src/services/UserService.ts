@@ -14,6 +14,7 @@ export interface UsuarioAPI {
 export class UserService {
   constructor(private readonly api: ApiClient) {}
 
+  // #################### US01: Consulta de datos para asignar el perfil local ####################
   async obtenerUsuarios(): Promise<UsuarioAPI[]> {
     try {
       return await this.api.request<UsuarioAPI[]>('/users');
@@ -34,4 +35,5 @@ export class UserService {
     }
     return usuario;
   }
+  // ############################################ Fin de US01 ############################################
 }

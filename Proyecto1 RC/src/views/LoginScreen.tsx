@@ -9,6 +9,7 @@ import { useAuth } from '../navigation/AuthContext';
 import { ErrorAmigable } from '../services/ErrorAmigable';
 import { Colors, Spacing } from '../utils/theme';
 
+// #################### US01: Inicio de sesión y asignación local de perfil ####################
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -97,6 +98,7 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
+// ############################################ Fin de US01 ############################################
 
 const styles = StyleSheet.create({
   safeArea: {

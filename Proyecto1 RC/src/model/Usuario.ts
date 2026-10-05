@@ -8,6 +8,7 @@ export interface DatosUsuario {
   rol: Rol;
 }
 
+// #################### US01: Perfil y rol asignado al usuario ##############
 export class Usuario {
   readonly rol: Rol;
 
@@ -60,3 +61,4 @@ export class Usuario {
     return new Usuario(data.id, data.username, data.nombre, data.email);
   }
 }
+// ############################ Fin de US01 ##################################

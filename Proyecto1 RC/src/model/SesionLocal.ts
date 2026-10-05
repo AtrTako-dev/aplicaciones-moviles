@@ -12,6 +12,7 @@
 
 import { ROLES, Rol } from './Rol';
 
+// #################### US05: Rol asociado a la sesión local ################
 export interface SesionUsuarioLocal {
   username: string;
   role: Rol;
@@ -30,3 +31,4 @@ export const ROLES_VALIDOS: readonly Rol[] = [
 export function esRolValido(role: unknown): role is Rol {
   return typeof role === 'string' && (ROLES_VALIDOS as readonly string[]).includes(role);
 }
+// ############################ Fin de US05 ##################################

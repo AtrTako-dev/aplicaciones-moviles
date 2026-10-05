@@ -6,6 +6,7 @@ const CLAVE_SESION = 'voz_urbana_sesion';
 const CLAVE_CARRITO = 'voz_urbana_carrito';
 
 export class StorageService {
+  // #################### US01: Persistencia segura de la sesión ####################
   async guardarSesion(sesion: Sesion): Promise<void> {
     try {
       await SecureStore.setItemAsync(CLAVE_SESION, sesion.aJson());
@@ -25,7 +26,9 @@ export class StorageService {
       return null;
     }
   }
+  // ############################################ Fin de US01 ############################################
 
+  // #################### US02: Eliminación de sesión y carrito local ####################
   async eliminarSesion(): Promise<void> {
     try {
       await SecureStore.deleteItemAsync(CLAVE_SESION);
@@ -41,4 +44,5 @@ export class StorageService {
       throw new ErrorAmigable('No se pudo eliminar el carrito del dispositivo. Inténtalo nuevamente.');
     }
   }
+  // ############################################ Fin de US02 ############################################
 }
