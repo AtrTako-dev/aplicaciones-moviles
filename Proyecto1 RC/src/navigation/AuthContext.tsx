@@ -44,12 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (nuevoUsuario: Usuario) => {
-    try {
-      await sessionService.saveSession(nuevoUsuario.username, nuevoUsuario.rol);
-    } catch {
-      // La sesión principal ya quedó guardada por el AuthController;
-      // la sesión local es solo un refuerzo para la interfaz por rol.
-    }
+    await sessionService.saveSession(nuevoUsuario.username, nuevoUsuario.rol);
     setUsuario(nuevoUsuario);
   };
 
