@@ -10,6 +10,7 @@ interface Peticion {
 export class ApiClient {
   private static readonly BASE_URL = 'https://fakestoreapi.com';
 
+  // #################### US01, US03 y US04: Transporte HTTP y errores comunes ####################
   async request<T>(endpoint: string, peticion: Peticion = {}): Promise<T> {
     const controlador = new AbortController();
     const timeout = setTimeout(() => controlador.abort(), TIEMPO_ESPERA_MS);
@@ -43,6 +44,7 @@ export class ApiClient {
     }
     return (await response.json()) as T;
   }
+  // ################################ Fin de US01, US03 y US04 ################################
 
   private construirUrl(endpoint: string): string {
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {

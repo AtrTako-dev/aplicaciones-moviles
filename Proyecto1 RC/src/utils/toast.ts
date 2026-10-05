@@ -7,6 +7,7 @@
 
 import { Alert, Platform, ToastAndroid } from 'react-native';
 
+// #################### US08: Confirmación visual del borrado ####################
 export function mostrarMensajeFlotante(mensaje: string, alCerrar?: () => void): void {
   if (Platform.OS === 'android') {
     ToastAndroid.show(mensaje, ToastAndroid.SHORT);
@@ -15,3 +16,4 @@ export function mostrarMensajeFlotante(mensaje: string, alCerrar?: () => void): 
   }
   Alert.alert('Listo', mensaje, [{ text: 'OK', onPress: alCerrar }]);
 }
+// ############################################ Fin de US08 ############################################

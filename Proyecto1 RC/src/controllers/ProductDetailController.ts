@@ -58,9 +58,11 @@ function reducer(
 /**
  * Hook que actúa como controlador del detalle de un producto.
  */
+// #################### US05, US07 y US08: Control de detalle ###############
 export function useProductDetailController(productId: number): ProductDetailControllerResult {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // #################### US05: Cargar detalle del producto #################
   const loadProduct = useCallback(() => {
     const controller = new AbortController();
     const { signal } = controller;
@@ -84,20 +86,25 @@ export function useProductDetailController(productId: number): ProductDetailCont
   }, [productId]);
 
   useEffect(() => loadProduct(), [loadProduct]);
+  // ############################ Fin de US05 ################################
 
+  // #################### US07: Guardar edición ##############################
   const guardarProducto = useCallback(
     async (data: ProductUpdateData, rol: string): Promise<Product | null> => {
       return updateProduct(productId, data, rol);
     },
     [productId],
   );
+  // ############################ Fin de US07 ################################
 
+  // #################### US08: Confirmar eliminación ########################
   const eliminarProducto = useCallback(
     async (rol: string): Promise<void> => {
       await deleteProduct(productId, rol);
     },
     [productId],
   );
+  // ############################ Fin de US08 ################################
 
   return {
     status: state.status,
@@ -110,3 +117,4 @@ export function useProductDetailController(productId: number): ProductDetailCont
     eliminarProducto,
   };
 }
+// ######################## Fin de US05, US07 y US08 #########################

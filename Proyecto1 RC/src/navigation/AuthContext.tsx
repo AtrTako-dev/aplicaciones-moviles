@@ -13,6 +13,7 @@ interface AuthState {
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // #################### US01: Restauración de sesión al iniciar la aplicación ####################
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [initializing, setInitializing] = useState(true);
 
@@ -43,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // ############################################ Fin de US01 ############################################
+
+  // #################### US01: Actualización del estado después de autenticar ####################
   const signIn = async (nuevoUsuario: Usuario) => {
     try {
       await sessionService.saveSession(nuevoUsuario.username, nuevoUsuario.rol);
@@ -52,12 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setUsuario(nuevoUsuario);
   };
+  // ############################################ Fin de US01 ############################################
 
+  // #################### US02: Limpieza de sesión local y memoria ####################
   const signOut = async () => {
     await sessionService.clearSession();
     await authController.logout();
     setUsuario(null);
   };
+  // ############################################ Fin de US02 ############################################
 
   return (
     <AuthContext.Provider value={{ usuario, initializing, signIn, signOut }}>

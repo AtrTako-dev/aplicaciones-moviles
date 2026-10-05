@@ -65,6 +65,7 @@ function reducer(
  * Hook que actúa como controlador del catálogo de productos.
  * Expone el estado (loading/error/éxito), los productos y la acción reintentar.
  */
+// #################### US03 y US04: Control del catálogo ###################
 export function useProductController(): ProductControllerResult {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [categories, setCategories] = useState<string[]>([]);
@@ -139,3 +140,4 @@ export function useProductController(): ProductControllerResult {
     retry,
   };
 }
+// ############################ Fin de US03 y US04 ##########################

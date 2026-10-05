@@ -2,6 +2,7 @@ import NetInfo from '@react-native-community/netinfo';
 import { ErrorAmigable } from './ErrorAmigable';
 
 export class NetworkService {
+  // #################### US01: Comprobación de conexión antes del inicio de sesión ####################
   async verificarConexion(): Promise<void> {
     const conectado = await this.estaConectado();
     if (!conectado) {
@@ -20,4 +21,5 @@ export class NetworkService {
       return false;
     }
   }
+  // ############################################ Fin de US01 ############################################
 }

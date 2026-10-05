@@ -26,6 +26,7 @@ import { useSesionLocal } from '../hooks/useSesionLocal';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
 
+// #################### US03 y US04: Catálogo y filtros #####################
 export default function ProductCatalogScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const { esAdministrador } = useSesionLocal();
@@ -101,6 +102,7 @@ export default function ProductCatalogScreen() {
               </ScrollView>
             )}
             <Text style={styles.count}>{products.length} productos disponibles</Text>
+            {/* #################### US06: Abrir creación #################### */}
             {esAdministrador ? (
               <Pressable
                 testID="catalog-add-button"
@@ -114,12 +116,14 @@ export default function ProductCatalogScreen() {
                 <Text style={styles.addButtonText}>Agregar producto</Text>
               </Pressable>
             ) : null}
+            {/* ######################## Fin de US06 ######################## */}
           </View>
         }
       />
     </SafeAreaView>
   );
 }
+// ########################## Fin de US03 y US04 ############################
 
 interface CategoryChipProps {
   label: string;

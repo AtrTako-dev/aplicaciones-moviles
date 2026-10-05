@@ -36,6 +36,7 @@ import { validateProductForm } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'EditarProducto'>;
 
+// #################### US07: Permisos y carga para editar ##################
 export default function ProductEditScreen({ route, navigation }: Props) {
   const { productId } = route.params;
   const { cargando, esAdministrador, role } = useSesionLocal();
@@ -105,6 +106,7 @@ export default function ProductEditScreen({ route, navigation }: Props) {
     />
   );
 }
+// ############################ Fin de US07 ##################################
 
 interface ProductEditFormProps {
   product: Product;
@@ -118,6 +120,7 @@ interface ProductEditFormProps {
   onGoCatalog: () => void;
 }
 
+// #################### US07: Formulario y guardado de cambios ##############
 function ProductEditForm({ product, onSave, onBack, onGoCatalog }: ProductEditFormProps) {
   const [title, setTitle] = useState(product.title);
   const [price, setPrice] = useState(product.price.toFixed(2));
@@ -241,6 +244,7 @@ function ProductEditForm({ product, onSave, onBack, onGoCatalog }: ProductEditFo
     </SafeAreaView>
   );
 }
+// ############################ Fin de US07 ##################################
 
 const styles = StyleSheet.create({
   safeArea: {

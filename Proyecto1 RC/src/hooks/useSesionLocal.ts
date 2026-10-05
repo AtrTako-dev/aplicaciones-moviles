@@ -18,6 +18,7 @@ export interface UseSesionLocalResult {
   cargando: boolean;
 }
 
+// #################### US05–US08: Rol para la interfaz #####################
 export function useSesionLocal(): UseSesionLocalResult {
   const [sesion, setSesion] = useState<SesionLocal | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -54,3 +55,4 @@ export function useSesionLocal(): UseSesionLocalResult {
     cargando,
   };
 }
+// ########################## Fin de US05–US08 ##############################

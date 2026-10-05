@@ -16,6 +16,7 @@ export interface AuthControllerDependencias {
 export class AuthController {
   constructor(private readonly dependencias: AuthControllerDependencias) {}
 
+  // #################### US01: Validación, inicio y restauración de sesión ####################
   validate(input: LoginCredentialsInput): FieldErrors {
     return validateLoginCredentials(input);
   }
@@ -41,9 +42,12 @@ export class AuthController {
       return null;
     }
   }
+  // ############################################ Fin de US01 ############################################
 
+  // #################### US02: Cierre de sesión y limpieza local ####################
   async logout(): Promise<void> {
     await this.dependencias.storageService.limpiarCarrito();
     await this.dependencias.storageService.eliminarSesion();
   }
+  // ############################################ Fin de US02 ############################################
 }

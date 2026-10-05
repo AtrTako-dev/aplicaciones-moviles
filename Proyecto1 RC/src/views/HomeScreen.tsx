@@ -16,6 +16,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // #################### US02: Cierre de sesión desde la pantalla principal ####################
   const handleLogout = async () => {
     setFormError(null);
     setLoading(true);
@@ -27,7 +28,9 @@ export default function HomeScreen({ navigation }: Props) {
       setLoading(false);
     }
   };
+  // ############################################ Fin de US02 ############################################
 
+  // #################### US01: Presentación del usuario y su perfil ####################
   const seccionPorRol = () => {
     if (usuario?.rol === ROLES.ADMINISTRADOR) {
       return 'Acceso de administrador: gestión de catálogo y usuarios.';
@@ -37,6 +40,7 @@ export default function HomeScreen({ navigation }: Props) {
     }
     return 'Acceso de cliente: exploración de productos.';
   };
+  // ############################################ Fin de US01 ############################################
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -63,6 +67,7 @@ export default function HomeScreen({ navigation }: Props) {
               title="Explorar catálogo"
               onPress={() => navigation.navigate('Catalogo')}
             />
+            {/* US02: Opción para salir desde el menú principal. */}
             <PrimaryButton
               testID="logout-button"
               title="Cerrar sesión"

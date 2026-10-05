@@ -22,6 +22,7 @@ const SESSION_KEY = '@voz_urbana/session_local';
 export class SessionService {
   constructor(private readonly storage: SessionStorage = AsyncStorage) {}
 
+  // #################### US01 y US02: Persistencia y limpieza del perfil local ####################
   /**
    * Persiste la sesión local con forma { user: { username, role } }.
    */
@@ -52,9 +53,8 @@ export class SessionService {
     }
   }
 
-  /**
-   * Devuelve solo el rol de la sesión actual, o null si no hay sesión válida.
-   */
+  /** Devuelve solo el rol de la sesión actual, o null si no hay sesión válida. */
+  // #################### US05: Consultar el rol de la sesión ################
   async getCurrentRole(): Promise<Rol | null> {
     const sesion = await this.getCurrentSession();
     return sesion?.user?.role ?? null;
@@ -66,6 +66,7 @@ export class SessionService {
   async isAdministrador(): Promise<boolean> {
     return (await this.getCurrentRole()) === 'Administrador';
   }
+  // ############################ Fin de US05 ##################################
 
   async clearSession(): Promise<void> {
     try {
@@ -74,7 +75,9 @@ export class SessionService {
       // La sesión queda inaccesible aunque la limpieza falle.
     }
   }
+  // ###################################### Fin de US01 y US02 ######################################
 
+  // #################### US05: Validación del perfil para permisos de producto ####################
   private isValidSession(value: Partial<SesionLocal>): boolean {
     return (
       typeof value?.user === 'object' &&
@@ -83,6 +86,7 @@ export class SessionService {
       esRolValido(value.user.role)
     );
   }
+  // ############################################ Fin de US05 ############################################
 }
 
 export const sessionService = new SessionService();

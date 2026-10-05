@@ -35,6 +35,7 @@ import { validateProductCreateForm } from '../utils/validators';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'CrearProducto'>;
 
+// #################### US06: Acceso a creación por rol #####################
 export default function ProductCreateScreen({ navigation }: Props) {
   const { cargando, esAdministrador, role } = useSesionLocal();
 
@@ -61,12 +62,14 @@ export default function ProductCreateScreen({ navigation }: Props) {
 
   return <ProductCreateForm role={role ?? ''} onGoCatalog={() => navigation.replace('Catalogo')} />;
 }
+// ############################ Fin de US06 ##################################
 
 interface ProductCreateFormProps {
   role: string;
   onGoCatalog: () => void;
 }
 
+// #################### US06: Formulario y envío del producto ################
 function ProductCreateForm({ role, onGoCatalog }: ProductCreateFormProps) {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -217,6 +220,7 @@ function ProductCreateForm({ role, onGoCatalog }: ProductCreateFormProps) {
     </SafeAreaView>
   );
 }
+// ############################ Fin de US06 ##################################
 
 const styles = StyleSheet.create({
   safeArea: {
