@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Usuario } from '../model/Usuario';
 import { authController } from '../config/AppContainer';
+import { cartStorageService } from '../services/CartStorageService';
 import { sessionService } from '../services/SessionService';
 
 interface AuthState {
@@ -57,6 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await sessionService.clearSession();
     await authController.logout();
+    // US10: el carrito persistido del usuario no debe sobrevivir al cierre de sesión.
+    if (usuario) {
+      await cartStorageService.eliminar(usuario.id).catch(() => undefined);
+    }
     setUsuario(null);
   };
   // ############################################ Fin de US02 ############################################

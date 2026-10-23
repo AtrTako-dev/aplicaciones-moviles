@@ -1,4 +1,5 @@
 import { AuthController } from '../controllers/AuthController';
+import { CartController } from '../controllers/CartController';
 import { CatalogController } from '../controllers/CatalogController';
 import { RegisterController } from '../controllers/RegisterController';
 import { Database } from '../database/Database';
@@ -6,6 +7,9 @@ import { SqliteUserDao } from '../database/SqliteUserDao';
 import { UserRepository } from '../repository/UserRepository';
 import { ApiClient } from '../services/ApiClient';
 import { AuthService } from '../services/AuthService';
+import { FakeStoreCartProductService } from '../services/CartProductService';
+import { CartService } from '../services/CartService';
+import { CartStorageService } from '../services/CartStorageService';
 import { NetworkService } from '../services/NetworkService';
 import { ProductService } from '../services/ProductService';
 import { StorageService } from '../services/StorageService';
@@ -31,3 +35,14 @@ export const catalogController = new CatalogController(
   new ProductService(apiClient),
   new NetworkService(),
 );
+
+// #################### US10: Composición del controlador del carrito ####################
+export function crearCartController(userId: number): CartController {
+  return new CartController({
+    userId,
+    cartService: new CartService(apiClient),
+    productos: new FakeStoreCartProductService(),
+    storage: new CartStorageService(),
+  });
+}
+// #################################### Fin de US10 ####################################

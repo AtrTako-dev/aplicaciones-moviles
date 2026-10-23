@@ -24,9 +24,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import PrimaryButton from '../components/PrimaryButton';
 import { useSesionLocal } from '../hooks/useSesionLocal';
 import { useProductDetailController } from '../controllers/ProductDetailController';
+import { ROLES } from '../model/Rol';
 import type { AppStackParamList } from '../navigation/AppNavigator';
+import { useCart } from '../navigation/CartContext';
 import { mostrarMensajeFlotante } from '../utils/toast';
 import { Colors, Spacing } from '../utils/theme';
 import { useRefreshOnFocus } from '../hooks/useRefreshOnFocus';
@@ -39,11 +42,14 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   const { isLoading, hasError, product, retry, eliminarProducto } =
     useProductDetailController(productId);
   const { cargando, esAdministrador, role } = useSesionLocal();
+  const { agregarProducto, cantidadDe } = useCart();
 
   useRefreshOnFocus(retry);
 
   const [imagenError, setImagenError] = useState(false);
   const [eliminando, setEliminando] = useState(false);
+  const [agregandoAlCarrito, setAgregandoAlCarrito] = useState(false);
+  const esCliente = role === ROLES.CLIENTE;
 
   useEffect(() => {
     if (hasError) {
@@ -84,6 +90,28 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
   const openEditor = () => {
     navigation.navigate('EditarProducto', { productId });
   };
+
+  // #################### US10: Agregar producto al carrito ####################
+  const agregarAlCarrito = async () => {
+    if (!product || agregandoAlCarrito) {
+      return;
+    }
+    setAgregandoAlCarrito(true);
+    try {
+      await agregarProducto(product);
+      mostrarMensajeFlotante('Producto agregado al carrito.');
+    } catch (error) {
+      Alert.alert(
+        'No se pudo agregar al carrito',
+        error instanceof Error
+          ? error.message
+          : 'Inténtalo nuevamente en unos segundos.',
+      );
+    } finally {
+      setAgregandoAlCarrito(false);
+    }
+  };
+  // #################################### Fin de US10 ####################################
 
   if (cargando || isLoading) {
     return (
@@ -147,6 +175,27 @@ export default function ProductDetailScreen({ route, navigation }: Props) {
           <Text style={styles.label}>Descripción</Text>
           <Text style={styles.description}>{product.description}</Text>
         </View>
+
+        {/* #################### US10: Compra del Cliente #################### */}
+        {esCliente ? (
+          <View style={styles.cartActions}>
+            <PrimaryButton
+              testID="detail-add-cart-button"
+              title={
+                cantidadDe(product.id) > 0 ? 'Agregar otra unidad' : 'Agregar al carrito'
+              }
+              onPress={agregarAlCarrito}
+              loading={agregandoAlCarrito}
+              disabled={agregandoAlCarrito}
+            />
+            {cantidadDe(product.id) > 0 ? (
+              <Text style={styles.cartHint} testID="detail-cart-quantity">
+                Ya tienes {cantidadDe(product.id)} en tu carrito.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+        {/* ######################## Fin de US10 ######################## */}
 
         {esAdministrador ? (
           <View style={styles.adminActions}>
@@ -272,6 +321,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.textMuted,
     lineHeight: 22,
+  },
+  cartActions: {
+    marginTop: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  cartHint: {
+    fontSize: 13,
+    color: Colors.textMuted,
+    textAlign: 'center',
   },
   adminActions: {
     marginTop: Spacing.lg,

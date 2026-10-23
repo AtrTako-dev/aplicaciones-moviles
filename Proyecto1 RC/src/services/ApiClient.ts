@@ -2,16 +2,29 @@ import { ErrorAmigable } from './ErrorAmigable';
 
 const TIEMPO_ESPERA_MS = 15000;
 
-interface Peticion {
-  method?: 'GET' | 'POST';
+export interface Peticion {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
 }
 
 export class ApiClient {
   private static readonly BASE_URL = 'https://fakestoreapi.com';
 
-  // #################### US01, US03 y US04: Transporte HTTP y errores comunes ####################
+  // #################### US01, US03, US04 y US10: Transporte HTTP y errores comunes ####################
   async request<T>(endpoint: string, peticion: Peticion = {}): Promise<T> {
+    const response = await this.ejecutar(endpoint, peticion);
+    return (await response.json()) as T;
+  }
+
+  /**
+   * Ejecuta una petición que no necesita leer el cuerpo de la respuesta
+   * (por ejemplo DELETE /carts/{id}). Mantiene el mismo manejo de errores.
+   */
+  async requestVoid(endpoint: string, peticion: Peticion = {}): Promise<void> {
+    await this.ejecutar(endpoint, peticion);
+  }
+
+  private async ejecutar(endpoint: string, peticion: Peticion): Promise<Response> {
     const controlador = new AbortController();
     const timeout = setTimeout(() => controlador.abort(), TIEMPO_ESPERA_MS);
     let response: Response;
@@ -42,9 +55,9 @@ export class ApiClient {
     if (!response.ok) {
       throw new ErrorAmigable('Ocurrió un error inesperado. Inténtalo nuevamente.');
     }
-    return (await response.json()) as T;
+    return response;
   }
-  // ################################ Fin de US01, US03 y US04 ################################
+  // ################################ Fin de US01, US03, US04 y US10 ################################
 
   private construirUrl(endpoint: string): string {
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {

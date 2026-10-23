@@ -9,6 +9,7 @@ import ProductDetailScreen from '../views/ProductDetailScreen';
 import ProductCatalogScreen from '../views/ProductCatalogScreen';
 import ProductEditScreen from '../views/ProductEditScreen';
 import ProductCreateScreen from '../views/ProductCreateScreen';
+import CartScreen from '../views/CartScreen';
 import LoadingIndicator from '../components/LoadingIndicator';
 import { Colors } from '../utils/theme';
 import type { Producto } from '../model/Producto';
@@ -27,6 +28,8 @@ export type AppStackParamList = {
   DetalleProducto: { productId: number };
   EditarProducto: { productId: number };
   CrearProducto: undefined;
+  /** US10: carrito del cliente autenticado. */
+  Carrito: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -85,6 +88,17 @@ export default function AppNavigator() {
               headerBackTitle: 'Volver',
             }}
           />
+          {/* #################### US10: Ruta del carrito #################### */}
+          <AppStack.Screen
+            name="Carrito"
+            component={CartScreen}
+            options={{
+              headerShown: true,
+              headerTitle: 'Mi carrito',
+              headerBackTitle: 'Volver',
+            }}
+          />
+          {/* ######################## Fin de US10 ######################## */}
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

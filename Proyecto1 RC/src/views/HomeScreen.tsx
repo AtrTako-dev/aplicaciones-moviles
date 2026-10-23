@@ -6,6 +6,7 @@ import ErrorMessage from '../components/ErrorMessage';
 import PrimaryButton from '../components/PrimaryButton';
 import { ROLES } from '../model/Rol';
 import { useAuth } from '../navigation/AuthContext';
+import { useCart } from '../navigation/CartContext';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { Colors, Spacing } from '../utils/theme';
 
@@ -13,8 +14,11 @@ type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
   const { usuario, signOut } = useAuth();
+  const { carrito } = useCart();
   const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const esCliente = usuario?.rol === ROLES.CLIENTE;
+  const unidadesEnCarrito = carrito?.cantidadTotal ?? 0;
 
   // #################### US02: Cierre de sesión desde la pantalla principal ####################
   const handleLogout = async () => {
@@ -67,6 +71,19 @@ export default function HomeScreen({ navigation }: Props) {
               title="Explorar catálogo"
               onPress={() => navigation.navigate('Catalogo')}
             />
+            {/* #################### US10: Acceso al carrito del Cliente #################### */}
+            {esCliente ? (
+              <PrimaryButton
+                testID="cart-button"
+                title={
+                  unidadesEnCarrito > 0
+                    ? `Mi carrito (${unidadesEnCarrito})`
+                    : 'Mi carrito'
+                }
+                onPress={() => navigation.navigate('Carrito')}
+              />
+            ) : null}
+            {/* ######################## Fin de US10 ######################## */}
             {/* US02: Opción para salir desde el menú principal. */}
             <PrimaryButton
               testID="logout-button"
